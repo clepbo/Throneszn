@@ -2,7 +2,7 @@
 const { chromium } = require('playwright');
 const V = process.env.VENDOR_DIR; // optional: serve CDN scripts from a local folder (offline/sandboxed runs)
 const BASE = process.env.BASE_URL || 'http://localhost:8765/';
-const PAGES=['', 'artists/bros-throne.html', 'artists/kidd-carder.html', 'artists/lilcase.html', 'shows.html', 'wear.html'];
+const PAGES=(process.env.PAGES ? process.env.PAGES.split(',') : ['', 'artists/bros-throne.html', 'artists/kidd-carder.html', 'artists/lilcase.html', 'shows.html', 'wear.html']).map(x => x === 'home' ? '' : x);
 const WIDTHS=[[360,740],[390,844],[768,1024],[1024,768],[1440,900],[1920,1080]];
 const fontCache={};
 async function setup(ctx){
@@ -27,6 +27,9 @@ async function setup(ctx){
     const tag = `${r.pg||'home'} @${r.w}${r.reduced?' reduced':''}`;
     await p.goto(BASE+r.pg, { waitUntil:'networkidle' });
     await p.waitForTimeout(2600);
+    // every pinned section must start exactly where its section starts
+    await p.evaluate(() => window.scrollTo(0, 0)); await p.waitForTimeout(300);
+    const pinOff = await p.evaluate(() => (() => window.ScrollTrigger ? ScrollTrigger.getAll().filter(t => t.pin).map(t => { const el = t.trigger; const top = el.getBoundingClientRect().top + scrollY; return { name: (el.className||'').toString().split(' ')[0], off: Math.round(t.start - top) }; }) : [])());
     // scroll the whole page in steps so every reveal fires
     const H = await p.evaluate(() => document.documentElement.scrollHeight);
     for (let y=0; y<=H; y+=Math.round(r.h*0.6)) { await p.evaluate(y=>window.scrollTo(0,y), y); await p.waitForTimeout(140); }
@@ -61,6 +64,8 @@ async function setup(ctx){
     if (res.badImgs.length) problems.push('broken images: '+res.badImgs.join(','));
     if (res.invisible.length) problems.push('stuck invisible: '+res.invisible.join(', '));
     if (res.loader || res.loading) problems.push('loader still present');
+    const badPins = pinOff.filter(x => Math.abs(x.off) > 2);
+    if (badPins.length) problems.push('pinned section starts in the wrong place: '+badPins.map(x => `${x.name} off by ${x.off}px`).join(', '));
     console.log((problems.length?'FAIL ':'ok   ')+tag+(problems.length?'\n      '+problems.join('\n      '):''));
     if (problems.length) fails.push(tag);
     if ((r.w===390||r.w===1440) && !r.reduced) { await p.evaluate(()=>window.scrollTo(0,0)); await p.waitForTimeout(600); await p.screenshot({path:`${require('os').tmpdir()}/qa-${(r.pg||'home').replace(/\W/g,'_')}-${r.w}.png`}); }

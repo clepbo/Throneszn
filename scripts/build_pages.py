@@ -268,7 +268,7 @@ def build_main(a, nxt):
 # Shows
 # ---------------------------------------------------------------------------
 
-# country keys match the map pins: nigeria (Lagos), russia (Moscow), uk (London)
+# country keys match the map pins: nigeria (Lagos), russia (Moscow), uk (UK office, West Midlands)
 SHOWS = [
     {
         "date": "2024-06-29", "day": "29", "month": "Jun 2024",
@@ -300,7 +300,7 @@ CITIES = [
     # key, label, note, lat, lon
     ("nigeria", "Lagos", "Roots", 6.52, 3.38),
     ("russia", "Moscow", "Studio & shows", 55.75, 37.62),
-    ("uk", "London", "Label office", 51.5, -0.13),
+    ("uk", "UK", "Label office", 52.58, -1.98),
 ]
 
 
@@ -438,7 +438,7 @@ def tee_face(side):
           <g class="tee__print" data-print="bgs"><text x="200" y="178" text-anchor="middle" class="tee__type" font-size="54">BIG GOD</text><text x="200" y="228" text-anchor="middle" class="tee__type" font-size="54">SZN</text></g>"""
     else:
         prints = """
-          <g class="tee__print" data-print="cities"><use href="#crownMark" x="176" y="96" width="48" height="28"/><text x="200" y="178" text-anchor="middle" class="tee__type" font-size="46">LAGOS</text><text x="200" y="226" text-anchor="middle" class="tee__type" font-size="46">MOSCOW</text><text x="200" y="274" text-anchor="middle" class="tee__type" font-size="46">LONDON</text></g>
+          <g class="tee__print" data-print="cities"><use href="#crownMark" x="176" y="96" width="48" height="28"/><text x="200" y="178" text-anchor="middle" class="tee__type" font-size="46">LAGOS</text><text x="200" y="226" text-anchor="middle" class="tee__type" font-size="46">MOSCOW</text><text x="200" y="274" text-anchor="middle" class="tee__type" font-size="46">UK</text></g>
           <g class="tee__print" data-print="bgs"><text x="200" y="200" text-anchor="middle" class="tee__type" font-size="92">BIG GOD</text><text x="200" y="286" text-anchor="middle" class="tee__type" font-size="92">SZN</text></g>
           <g class="tee__print" data-print="wordmark"><text x="200" y="250" text-anchor="middle" class="tee__type" font-size="96">THRONE</text></g>"""
     return f"""        <svg class="tee__face tee__face--{side}" viewBox="0 0 400 460" role="img" aria-label="Tee, {side}">
@@ -516,7 +516,7 @@ def build_wear_main():
         </fieldset>
         <fieldset class="topics">
           <legend>Back print</legend>
-{radios("teeBack", [("cities", "Lagos · Moscow · London"), ("bgs", "Big God SZN"), ("wordmark", "THRONE"), ("none", "Blank")], "cities")}
+{radios("teeBack", [("cities", "Lagos · Moscow · UK"), ("bgs", "Big God SZN"), ("wordmark", "THRONE"), ("none", "Blank")], "cities")}
         </fieldset>
         <div class="studio__actions">
           <button class="btn btn--ghost" type="button" data-tee-flip data-magnetic>Turn it around</button>

@@ -29,6 +29,8 @@ const check = (name, ok, extra='') => { console.log((ok?'ok   ':'FAIL ')+name+(e
   check('loader shows on first load', await ev(() => !!document.getElementById('loader')));
   await p.waitForLoadState('networkidle'); await p.waitForTimeout(2600);
   check('loader clears and page unlocks', await ev(() => !document.getElementById('loader') && !document.body.classList.contains('is-loading')));
+  const pins0 = await ev(() => (() => window.ScrollTrigger ? ScrollTrigger.getAll().filter(t => t.pin).map(t => { const el = t.trigger; const top = el.getBoundingClientRect().top + scrollY; return { name: (el.className||'').toString().split(' ')[0], off: Math.round(t.start - top) }; }) : [])());
+  check('pinned sections start exactly at their section', pins0.length > 0 && pins0.every(x => Math.abs(x.off) <= 2), JSON.stringify(pins0));
   check('hero crown canvas is drawn', await ev(() => { const c=document.getElementById('heroCrown'); const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data; let n=0; for(let i=3;i<d.length;i+=4) if(d[i]) n++; return n>1000; }));
   await tap('.now-chip'); await p.waitForTimeout(1200);
   check('now-chip starts How Far', await playing());
@@ -177,6 +179,8 @@ const check = (name, ok, extra='') => { console.log((ok?'ok   ':'FAIL ')+name+(e
   check('Back button returns to Shows', await ev(() => document.body.dataset.page==='shows'));
   await p.goBack(); await p.waitForTimeout(3200);
   check('Back again returns home', await ev(() => document.body.dataset.page==='home' && !!document.getElementById('heroCrown')));
+  const pinsBack = await ev(() => { window.scrollTo(0,0); return (() => window.ScrollTrigger ? ScrollTrigger.getAll().filter(t => t.pin).map(t => { const el = t.trigger; const top = el.getBoundingClientRect().top + scrollY; return { name: (el.className||'').toString().split(' ')[0], off: Math.round(t.start - top) }; }) : [])(); });
+  check('pinned sections still start in place after returning home', pinsBack.every(x => Math.abs(x.off) <= 2), JSON.stringify(pinsBack));
   await go('.music', 0); const y0 = await ev(() => getComputedStyle(document.getElementById('crateTrack')).transform);
   await go('.music', Math.round(H*1.2)); const y1 = await ev(() => getComputedStyle(document.getElementById('crateTrack')).transform);
   if (await ev(() => document.getElementById('crate').classList.contains('is-pinned'))) check('crate pin still works after returning home', y0 !== y1);

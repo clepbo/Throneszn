@@ -547,7 +547,7 @@
     $$('[data-dotstrip]', main).forEach(cv => visuals.push(new DotStrip(cv)));
 
     bindMagnetic(main);
-    bindRoster(main); bindShows(main); bindTilt(main); bindForms(main); bindClocks(main); bindCrate(main);
+    bindRoster(main); bindShows(main); bindTilt(main); bindForms(main); bindClocks(main);
     bindTrail(main); bindPiles(main);
     bindMap(main); bindArchive(main); bindRequest(main); bindTee(main); bindStrip(main);
 
@@ -607,6 +607,10 @@
         }
       }, main);
     }
+    // pinned sections are measured top to bottom: the crate's pin is created after the zoom
+    // pin above it, then every trigger is re-sorted by position and re-measured
+    bindCrate(main);
+    if (hasGSAP) { ScrollTrigger.sort(); ScrollTrigger.refresh(); }
     syncUI();
     dispatchEvent(new Event('throne:page'));
     if (!first) introPage(main);

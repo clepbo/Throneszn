@@ -32,7 +32,7 @@ every push to the default branch. If the site ever shows a 404, check
 ## Shows and Throne Wear pages
 
 **Shows** (`shows.html`): a dot-matrix map of Europe and Africa built from Natural Earth
-land data, with Lagos, Moscow and London pulsing and dotted arcs between them (it reacts to
+land data, with Lagos, Moscow and the UK pulsing and dotted arcs between them (it reacts to
 the cursor and to the music). Tapping a city filters the archive; the archive rows expand
 with poster, details and links; country chips filter too. "Bring Throne to your city" has a
 gold ticket that fills itself in as you type your city and pick artists.
@@ -109,7 +109,7 @@ out to lnk.to, slide-up reveals, a "fly" hover lift, minimal footer.
 | Featured | Big God SZN with a spinning disc that parallaxes out from behind the cover. |
 | Shows | Rows sweep in a surface on hover with an image peeking beside the cursor. |
 | Wear | 3D tilt cards with a light glare; drop sign-up. |
-| Cities | Live local time in Lagos, Moscow and London. |
+| Cities | Live local time in Lagos, Moscow and the UK. |
 | Contact | Topic chips (Booking / Demo / Press), floating labels, click-to-copy details. |
 | Footer | Outlined THRONE wordmark lit by a cursor spotlight. |
 
@@ -124,6 +124,5 @@ plain, fully readable page if the libraries fail to load.
 - Higher-res artist photography, full bios for Kidd Carder and Lilcase, and Lilcase's socials.
 - Confirm the management email (`thronerecordsmanagement@gmail.com` is our reading of the current site) and which phone numbers to publish.
 - 2026 show dates, and whether Throne Wear has a store yet (forms currently do not submit).
-- Where the label is based in the UK: the address is in the West Midlands (WV13), but the site says "London" throughout.
-- Real Throne Wear product photos and prints; the tee designer uses mock prints (crown mark, THRONE, Big God SZN, Lagos · Moscow · London).
+- Real Throne Wear product photos and prints; the tee designer uses mock prints (crown mark, THRONE, Big God SZN, Lagos · Moscow · UK).
 - Vector logo files.
