@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Throne Records</title>
+<meta name="description" content="Throne Records — independent label from Lagos, Moscow and London. Home of Bros Throne, Kidd Carder and Lilcase.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;900&family=Hanken+Grotesk:wght@400;500;600&family=Martian+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="is-loading">
+
+<!-- ============ LOADER ============ -->
+<div class="loader" id="loader" aria-hidden="true">
+  <canvas class="loader__crown" id="loaderCrown"></canvas>
+  <div class="loader__meta">
+    <span>Throne Records</span>
+    <span class="loader__count" id="loaderCount">000</span>
+  </div>
+</div>
+
+<!-- ============ CURSOR ============ -->
+<div class="cursor" id="cursor" aria-hidden="true"><span class="cursor__label" id="cursorLabel"></span></div>
+<div class="artist-float" id="artistFloat" aria-hidden="true"><img alt="" id="artistFloatImg"></div>
+
+<!-- ============ HEADER ============ -->
+<header class="nav" id="nav">
+  <a class="nav__brand" href="#top" aria-label="Throne Records home">
+    <svg class="nav__crown" viewBox="0 0 38 22" aria-hidden="true"><use href="#crownMark"/></svg>
+    <span>Throne</span>
+  </a>
+  <nav class="nav__links" aria-label="Primary">
+    <a href="#artists" data-magnetic>Artists</a>
+    <a href="#music" data-magnetic>Music</a>
+    <a href="#shows" data-magnetic>Shows</a>
+    <a href="#wear" data-magnetic>Wear</a>
+    <a href="#contact" data-magnetic>Contact</a>
+  </nav>
+  <button class="nav__listen" type="button" data-play="how-far" data-cursor="Play" data-magnetic>
+    <span class="eq-mini" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+    <span class="nav__listen-text">Listen</span>
+  </button>
+  <button class="nav__burger" id="burger" type="button" aria-expanded="false" aria-controls="menu" aria-label="Open menu">
+    <span></span><span></span>
+  </button>
+</header>
+
+<div class="menu" id="menu" hidden>
+  <nav class="menu__links" aria-label="Mobile">
+    <a href="#artists"><small>01</small>Artists</a>
+    <a href="#music"><small>02</small>Music</a>
+    <a href="#shows"><small>03</small>Shows</a>
+    <a href="#wear"><small>04</small>Wear</a>
+    <a href="#contact"><small>05</small>Contact</a>
+  </nav>
+  <p class="menu__foot">Lagos · Moscow · London</p>
+</div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- Crown mark: dot-matrix, echoing the logo -->
+    <symbol id="crownMark" viewBox="0 0 38 22">
+      <g fill="currentColor">
+        <circle cx="3" cy="3" r="1.6"/><circle cx="19" cy="2" r="1.6"/><circle cx="35" cy="3" r="1.6"/>
+        <circle cx="11" cy="6" r="1.6"/><circle cx="27" cy="6" r="1.6"/>
+        <circle cx="3" cy="8" r="1.6"/><circle cx="19" cy="7" r="1.6"/><circle cx="35" cy="8" r="1.6"/>
+        <circle cx="7" cy="11" r="1.6"/><circle cx="11" cy="11" r="1.6"/><circle cx="15" cy="11" r="1.6"/><circle cx="19" cy="12" r="1.6"/><circle cx="23" cy="11" r="1.6"/><circle cx="27" cy="11" r="1.6"/><circle cx="31" cy="11" r="1.6"/>
+        <circle cx="3" cy="13" r="1.6"/><circle cx="35" cy="13" r="1.6"/>
+        <circle cx="3" cy="18" r="1.6"/><circle cx="7" cy="18" r="1.6"/><circle cx="11" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/><circle cx="19" cy="18" r="1.6"/><circle cx="23" cy="18" r="1.6"/><circle cx="27" cy="18" r="1.6"/><circle cx="31" cy="18" r="1.6"/><circle cx="35" cy="18" r="1.6"/>
+      </g>
+    </symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path fill="currentColor" d="M7 4.5v15l13-7.5z"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><path fill="currentColor" d="M6 4h4.5v16H6zM13.5 4H18v16h-4.5z"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M5 19 19 5M8 5h11v11"/></symbol>
+  </defs>
+</svg>
+
+<main id="top">
+
+  <!-- ============ HERO ============ -->
+  <section class="hero" aria-label="Throne Records">
+    <div class="hero__stage">
+      <canvas class="hero__crown" id="heroCrown" aria-hidden="true"></canvas>
+      <h1 class="hero__word" aria-label="Throne">
+        <span class="hero__letters" aria-hidden="true"><span>T</span><span>H</span><span>R</span><span>O</span><span>N</span><span>E</span></span>
+      </h1>
+      <p class="hero__sub">Records</p>
+    </div>
+
+    <div class="hero__row">
+      <p class="hero__lede reveal-up">An independent label for the dreamers, the believers, the truth-tellers and the ground shakers. Afrobeats and ghetto gospel, out of Lagos, Moscow and London since 2021.</p>
+
+      <button class="now-chip reveal-up" type="button" data-play="how-far" data-cursor="Play">
+        <span class="now-chip__art"><img src="assets/img/featured_fet1_1.jpg" alt=""></span>
+        <span class="now-chip__text">
+          <small>Press play · the crown listens</small>
+          <strong>How Far — Bros Throne</strong>
+        </span>
+        <span class="now-chip__btn" aria-hidden="true"><svg><use href="#i-play"/></svg></span>
+      </button>
+    </div>
+
+    <div class="ticker" aria-label="Catalogue highlights">
+      <div class="ticker__track">
+        <span>Big God SZN — the debut EP</span><b>✦</b><span>How Far</span><b>✦</b><span>Jesu</span><b>✦</b><span>Reckless ft. ODUMODUBLVCK</span><b>✦</b><span>Neighborhood Hero ft. Zlatan Ibile</span><b>✦</b><span>Big God ft. Lilcase</span><b>✦</b>
+        <span aria-hidden="true">Big God SZN — the debut EP</span><b aria-hidden="true">✦</b><span aria-hidden="true">How Far</span><b aria-hidden="true">✦</b><span aria-hidden="true">Jesu</span><b aria-hidden="true">✦</b><span aria-hidden="true">Reckless ft. ODUMODUBLVCK</span><b aria-hidden="true">✦</b><span aria-hidden="true">Neighborhood Hero ft. Zlatan Ibile</span><b aria-hidden="true">✦</b><span aria-hidden="true">Big God ft. Lilcase</span><b aria-hidden="true">✦</b>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ MANIFESTO ============ -->
+  <section class="manifesto" id="about">
+    <p class="eyebrow">About the label</p>
+    <p class="manifesto__text" data-scrub>Powered by our legacy, it’s time to build a new generation of believers, straight-shooters and storytellers. Our artists redefine genres. Our artists define generations. Our artists change the world.</p>
+    <div class="manifesto__facts">
+      <div><span class="fact__k">Founded</span><span class="fact__v">2021</span></div>
+      <div><span class="fact__k">Home bases</span><span class="fact__v">3</span></div>
+      <div><span class="fact__k">Sound</span><span class="fact__v fact__v--sm">Afrobeats · Ghetto gospel · Afro-funk</span></div>
+    </div>
+  </section>
+
+  <!-- ============ ARTISTS ============ -->
+  <section class="artists" id="artists">
+    <div class="section-head">
+      <h2 class="section-title" data-split>The roster</h2>
+      <p class="section-note">Three voices, one crown. Hover a name.</p>
+    </div>
+
+    <ul class="artist-list">
+      <li>
+        <button class="artist-row" type="button" data-artist="bros" data-img="assets/img/portfolio_bros_throne.jpg" data-cursor="View">
+          <span class="artist-row__idx">A/01</span>
+          <span class="artist-row__name"><span class="roll" data-text="Bros Throne">Bros Throne</span></span>
+          <span class="artist-row__role">Artist · Founder &amp; CEO</span>
+          <img class="artist-row__thumb" src="assets/img/portfolio_bros_throne.jpg" alt="Bros Throne">
+        </button>
+      </li>
+      <li>
+        <button class="artist-row" type="button" data-artist="kidd" data-img="assets/img/portfolio_kid22.jpg" data-cursor="View">
+          <span class="artist-row__idx">A/02</span>
+          <span class="artist-row__name"><span class="roll" data-text="Kidd Carder">Kidd Carder</span></span>
+          <span class="artist-row__role">Artist · Songwriter</span>
+          <img class="artist-row__thumb" src="assets/img/portfolio_kid22.jpg" alt="Kidd Carder">
+        </button>
+      </li>
+      <li>
+        <button class="artist-row" type="button" data-artist="lilcase" data-img="assets/img/portfolio_lil_case.jpg" data-cursor="View">
+          <span class="artist-row__idx">A/03</span>
+          <span class="artist-row__name"><span class="roll" data-text="Lilcase">Lilcase</span></span>
+          <span class="artist-row__role">Singer · Artist</span>
+          <img class="artist-row__thumb" src="assets/img/portfolio_lil_case.jpg" alt="Lilcase">
+        </button>
+      </li>
+    </ul>
+  </section>
+
+  <!-- Artist drawer -->
+  <div class="drawer" id="drawer" hidden>
+    <div class="drawer__scrim" data-close></div>
+    <article class="drawer__panel" role="dialog" aria-modal="true" aria-labelledby="drawerName">
+      <button class="drawer__close" type="button" data-close aria-label="Close">Close</button>
+      <div class="drawer__img"><img id="drawerImg" alt=""></div>
+      <div class="drawer__body">
+        <p class="eyebrow" id="drawerRole"></p>
+        <h3 class="drawer__name" id="drawerName"></h3>
+        <p class="drawer__bio" id="drawerBio"></p>
+        <dl class="drawer__facts" id="drawerFacts"></dl>
+        <div class="drawer__actions" id="drawerActions"></div>
+      </div>
+    </article>
+  </div>
+
+  <!-- ============ MUSIC ============ -->
+  <section class="music" id="music">
+    <div class="music__pin">
+      <div class="section-head section-head--music">
+        <h2 class="section-title" data-split>New music</h2>
+        <p class="section-note music__hint"><span class="hint-desktop">Scroll to flip through the crate</span><span class="hint-touch">Swipe the crate</span> <span class="music__count" id="musicCount">01 / 08</span></p>
+      </div>
+      <div class="crate" id="crate">
+        <div class="crate__track" id="crateTrack">
+
+          <article class="record" data-cursor="Play" data-play="how-far">
+            <div class="record__sleeve">
+              <div class="record__vinyl" aria-hidden="true"><span style="background-image:url(assets/img/featured_fet1_1.jpg)"></span></div>
+              <img class="record__cover" src="assets/img/featured_fet1_1.jpg" alt="How Far cover">
+              <span class="record__play" aria-hidden="true"><svg><use href="#i-play"/></svg></span>
+            </div>
+            <div class="record__meta">
+              <h3>How Far</h3>
+              <p>Bros Throne <span>Afrobeats</span></p>
+            </div>
+            <button class="sr-only" type="button" data-play="how-far">Play How Far</button>
+          </article>
+
+          <article class="record" data-cursor="Play" data-play="jesu">
+            <div class="record__sleeve">
+              <div class="record__vinyl" aria-hidden="true"><span style="background-image:url(assets/img/featured_fet1_2.jpg)"></span></div>
+              <img class="record__cover" src="assets/img/featured_fet1_2.jpg" alt="Jesu cover">
+              <span class="record__play" aria-hidden="true"><svg><use href="#i-play"/></svg></span>
+            </div>
+            <div class="record__meta">
+              <h3>Jesu</h3>
+              <p>Bros Throne <span>Ghetto gospel</span></p>
+            </div>
+            <button class="sr-only" type="button" data-play="jesu">Play Jesu</button>
+          </article>
+
+          <a class="record" href="https://www.youtube.com/@BrosThrone" target="_blank" rel="noopener" data-cursor="Watch">
+            <div class="record__sleeve">
+              <div class="record__vinyl" aria-hidden="true"><span style="background-image:url(assets/img/event_big1.jpg)"></span></div>
+              <img class="record__cover" src="assets/img/event_big1.jpg" alt="Big God SZN cover">
+              <span class="record__play record__play--out" aria-hidden="true"><svg><use href="#i-arrow"/></svg></span>
+            </div>
+            <div class="record__meta">
+              <h3>Big God</h3>
+              <p>Bros Throne ft. Lilcase <span>Ghetto gospel</span></p>
+            </div>
+          </a>
+
+          <a class="record" href="https://www.youtube.com/@BrosThrone" target="_blank" rel="noopener" data-cursor="Watch">
+            <div class="record__sleeve">
+              <div class="record__vinyl" aria-hidden="true"><span style="background-image:url(assets/img/artist_bros.jpg)"></span></div>
+              <img class="record__cover" src="assets/img/artist_bros.jpg" alt="Reckless cover">
+              <span class="record__play record__play--out" aria-hidden="true"><svg><use href="#i-arrow"/></svg></span>
+            </div>
+            <div class="record__meta">
+              <h3>Reckless</h3>
+              <p>Bros Throne ft. ODUMODUBLVCK <span>Afrobeats</span></p>
+            </div>
+          </a>
+
+          <a class="record" href="https://www.youtube.com/@BrosThrone" target="_blank" rel="noopener" data-cursor="Watch">
+            <div class="record__sleeve">
+              <div class="record__vinyl" aria-hidden="true"><span></span></div>
+              <div class="record__cover record__cover--type"><span class="tc-k">ft. Zlatan Ibile</span><span class="tc-t">Neigh&shy;bor&shy;hood Hero</span><svg class="tc-c" viewBox="0 0 38 22"><use href="#crownMark"/></svg></div>
+              <span class="record__play record__play--out" aria-hidden="true"><svg><use href="#i-arrow"/></svg></span>
+            </div>
+            <div class="record__meta">
+              <h3>Neighborhood Hero</h3>
+              <p>Bros Throne ft. Zlatan Ibile <span>Afrobeats</span></p>
+            </div>
+          </a>
+
+          <a class="record" href="https://www.youtube.com/@BrosThrone" target="_blank" rel="noopener" data-cursor="Watch">
+            <div class="record__sleeve">
+              <div class="record__vinyl" aria-hidden="true"><span></span></div>
+              <div class="record__cover record__cover--type record__cover--gold"><span class="tc-k">Bros Throne</span><span class="tc-t">Blessed</span><svg class="tc-c" viewBox="0 0 38 22"><use href="#crownMark"/></svg></div>
+              <span class="record__play record__play--out" aria-hidden="true"><svg><use href="#i-arrow"/></svg></span>
+            </div>
+            <div class="record__meta">
+              <h3>Blessed</h3>
+              <p>Bros Throne <span>Afrobeats</span></p>
+            </div>
+          </a>
+
+          <a class="record" href="https://www.youtube.com/@BrosThrone" target="_blank" rel="noopener" data-cursor="Watch">
+            <div class="record__sleeve">
+              <div class="record__vinyl" aria-hidden="true"><span></span></div>
+              <div class="record__cover record__cover--type"><span class="tc-k">Bros Throne</span><span class="tc-t">Lonely</span><svg class="tc-c" viewBox="0 0 38 22"><use href="#crownMark"/></svg></div>
+              <span class="record__play record__play--out" aria-hidden="true"><svg><use href="#i-arrow"/></svg></span>
+            </div>
+            <div class="record__meta">
+              <h3>Lonely</h3>
+              <p>Bros Throne <span>Afrobeats</span></p>
+            </div>
+          </a>
+
+          <a class="record" href="https://www.youtube.com/@BrosThrone" target="_blank" rel="noopener" data-cursor="Watch">
+            <div class="record__sleeve">
+              <div class="record__vinyl" aria-hidden="true"><span></span></div>
+              <div class="record__cover record__cover--type record__cover--gold"><span class="tc-k">Throne Records</span><span class="tc-t">G63</span><svg class="tc-c" viewBox="0 0 38 22"><use href="#crownMark"/></svg></div>
+              <span class="record__play record__play--out" aria-hidden="true"><svg><use href="#i-arrow"/></svg></span>
+            </div>
+            <div class="record__meta">
+              <h3>G63</h3>
+              <p>Bros Throne <span>Afrobeats</span></p>
+            </div>
+          </a>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FEATURED ============ -->
+  <section class="feature" aria-labelledby="featureTitle">
+    <div class="feature__art">
+      <div class="feature__disc" aria-hidden="true"><span style="background-image:url(assets/img/event_big1.jpg)"></span></div>
+      <img class="feature__cover" src="assets/img/event_big1.jpg" alt="Big God SZN cover art">
+    </div>
+    <div class="feature__copy">
+      <p class="eyebrow">Featured · Debut EP</p>
+      <h2 class="feature__title" id="featureTitle" data-split>Big God SZN</h2>
+      <p class="feature__quote">“Times were changing. Clothes were changing. Morals were changing. Big God SZN never changed.”</p>
+      <p class="feature__by">— Bros Throne</p>
+      <dl class="feature__specs">
+        <div><dt>Lead single</dt><dd>Big God ft. Lilcase</dd></div>
+        <div><dt>Single out</dt><dd>01·08·2023</dd></div>
+        <div><dt>EP launch</dt><dd>07·06·2024, Russia</dd></div>
+      </dl>
+      <a class="btn btn--gold" href="https://www.youtube.com/@BrosThrone" target="_blank" rel="noopener" data-magnetic data-cursor="Watch">
+        Watch on YouTube <svg><use href="#i-arrow"/></svg>
+      </a>
+    </div>
+  </section>
+
+  <!-- ============ SHOWS ============ -->
+  <section class="shows" id="shows">
+    <div class="section-head">
+      <h2 class="section-title" data-split>Shows &amp; drops</h2>
+      <p class="section-note">2026 dates to be announced. The archive so far:</p>
+    </div>
+    <ol class="show-list">
+      <li class="show" data-img="assets/img/event_big1.jpg">
+        <time class="show__date" datetime="2024-06-29"><b>29</b> Jun 2024</time>
+        <span class="show__title">Afro Music Live in Moscow</span>
+        <span class="show__place">Moscow, RU</span>
+        <span class="show__tag">Played</span>
+      </li>
+      <li class="show" data-img="assets/img/event_big1.jpg">
+        <time class="show__date" datetime="2024-06-07"><b>07</b> Jun 2024</time>
+        <span class="show__title">Big God SZN — EP launch</span>
+        <span class="show__place">Russia</span>
+        <span class="show__tag">Released</span>
+      </li>
+      <li class="show" data-img="assets/img/event_blaq_event1.jpg">
+        <time class="show__date" datetime="2024-04-19"><b>19</b> Apr 2024</time>
+        <span class="show__title">ASAP ft. Blaq Bonez</span>
+        <span class="show__place">Russia</span>
+        <span class="show__tag">Released</span>
+      </li>
+    </ol>
+    <div class="show-peek" id="showPeek" aria-hidden="true"><img alt="" id="showPeekImg"></div>
+  </section>
+
+  <!-- ============ WEAR ============ -->
+  <section class="wear" id="wear">
+    <div class="wear__intro">
+      <p class="eyebrow">Throne Wear</p>
+      <h2 class="section-title" data-split>Dress like the crown</h2>
+      <p class="wear__text">Music, lifestyle and fashion have always been one thing here. The first Throne Wear capsule is in the works.</p>
+      <form class="inline-form" id="dropForm" novalidate>
+        <label class="sr-only" for="dropEmail">Email for the drop</label>
+        <input id="dropEmail" type="email" placeholder="Email for first access" autocomplete="email" required>
+        <button class="btn btn--gold" type="submit" data-magnetic>Notify me</button>
+        <p class="form-msg" id="dropMsg" role="status"></p>
+      </form>
+    </div>
+    <div class="wear__cards">
+      <figure class="tilt" data-tilt>
+        <img src="assets/img/cloths_product1.jpg" alt="Lilcase in Throne Wear, lounge set">
+        <figcaption><span>Look 01</span><span>Coming soon</span></figcaption>
+      </figure>
+      <figure class="tilt" data-tilt>
+        <img src="assets/img/cloths_product2.jpg" alt="Bros Throne on stage in Throne Wear">
+        <figcaption><span>Look 02</span><span>Coming soon</span></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ============ CITIES ============ -->
+  <section class="cities" aria-label="Where we are">
+    <div class="city"><span class="city__name">Lagos</span><span class="city__time" data-tz="Africa/Lagos">--:--</span><span class="city__note">Roots · Edo &amp; Lagos, NG</span></div>
+    <div class="city"><span class="city__name">Moscow</span><span class="city__time" data-tz="Europe/Moscow">--:--</span><span class="city__note">Studio &amp; shows, RU</span></div>
+    <div class="city"><span class="city__name">London</span><span class="city__time" data-tz="Europe/London">--:--</span><span class="city__note">Label office, UK</span></div>
+  </section>
+
+  <!-- ============ CONTACT ============ -->
+  <section class="contact" id="contact">
+    <div class="contact__head">
+      <h2 class="contact__title" data-split>Pull up a chair.</h2>
+      <p class="contact__text">Bookings, features, press, or a demo you believe in. Tell us what you’ve got.</p>
+      <ul class="contact__lines">
+        <li><span>Email</span><button class="copy" type="button" data-copy="info@throneszn.com">info@throneszn.com</button></li>
+        <li><span>Management</span><button class="copy" type="button" data-copy="thronerecordsmanagement@gmail.com">thronerecordsmanagement@gmail.com</button></li>
+        <li><span>UK</span><button class="copy" type="button" data-copy="077 7662 2184">077 7662 2184</button></li>
+        <li><span>NG</span><button class="copy" type="button" data-copy="+234 803 311 2018">+234 803 311 2018</button></li>
+        <li><span>Post</span><span>24 Hartill Street, WV13 2JG, United Kingdom</span></li>
+      </ul>
+    </div>
+
+    <form class="contact__form" id="contactForm" novalidate>
+      <fieldset class="topics">
+        <legend>I’m reaching out about</legend>
+        <input type="radio" name="topic" id="t-book" value="Booking" checked><label for="t-book">Booking</label>
+        <input type="radio" name="topic" id="t-demo" value="Demo"><label for="t-demo">Demo</label>
+        <input type="radio" name="topic" id="t-press" value="Press"><label for="t-press">Press</label>
+        <input type="radio" name="topic" id="t-other" value="Other"><label for="t-other">Something else</label>
+      </fieldset>
+      <div class="field"><input id="cName" type="text" placeholder=" " autocomplete="name" required><label for="cName">Your name</label></div>
+      <div class="field"><input id="cEmail" type="email" placeholder=" " autocomplete="email" required><label for="cEmail">Email</label></div>
+      <div class="field"><textarea id="cMsg" rows="4" placeholder=" " required></textarea><label for="cMsg">Message</label></div>
+      <button class="btn btn--gold btn--wide" type="submit" data-magnetic>Send message <svg><use href="#i-arrow"/></svg></button>
+      <p class="form-msg" id="contactMsg" role="status"></p>
+    </form>
+  </section>
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="footer">
+  <div class="footer__top">
+    <ul class="socials">
+      <li><a href="https://www.instagram.com/brosthrone" target="_blank" rel="noopener" data-magnetic>Instagram</a></li>
+      <li><a href="https://www.youtube.com/@BrosThrone" target="_blank" rel="noopener" data-magnetic>YouTube</a></li>
+      <li><a href="https://x.com/brosthrone" target="_blank" rel="noopener" data-magnetic>X</a></li>
+      <li><a href="https://www.facebook.com/brosthrone" target="_blank" rel="noopener" data-magnetic>Facebook</a></li>
+      <li><a href="https://www.snapchat.com/add/brosthrone" target="_blank" rel="noopener" data-magnetic>Snapchat</a></li>
+    </ul>
+    <a class="footer__up" href="#top" data-magnetic>Back to top ↑</a>
+  </div>
+  <p class="footer__word" aria-hidden="true">THRONE</p>
+  <div class="footer__base">
+    <span>© Throne Records 2026</span>
+    <span>Lagos · Moscow · London</span>
+  </div>
+</footer>
+
+<!-- ============ PLAYER ============ -->
+<div class="player" id="player" aria-label="Audio player">
+  <img class="player__art" id="playerArt" src="assets/img/featured_fet1_1.jpg" alt="">
+  <div class="player__info">
+    <strong id="playerTitle">How Far</strong>
+    <span id="playerArtist">Bros Throne</span>
+  </div>
+  <button class="player__toggle" id="playerToggle" type="button" aria-label="Play">
+    <svg id="playerIcon"><use href="#i-play"/></svg>
+  </button>
+  <div class="player__bar">
+    <span class="player__time" id="playerCur">0:00</span>
+    <input class="player__seek" id="playerSeek" type="range" min="0" max="1000" value="0" aria-label="Seek">
+    <span class="player__time" id="playerDur">0:00</span>
+  </div>
+  <button class="player__next" id="playerNext" type="button" aria-label="Next track">Next</button>
+  <audio id="audio" preload="none"></audio>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
