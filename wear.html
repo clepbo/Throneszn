@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en" data-tone="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Throne Wear — Throne Records</title>
+<meta name="description" content="Throne Wear Capsule 01 is in the works. Design the first drop and get first access.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;900&family=Hanken+Grotesk:wght@400;500;600&family=Martian+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="css/style.css">
+<meta name="site-root" content="./">
+</head>
+<body class="is-loading" data-page="wear">
+
+<!-- ============ LOADER ============ -->
+<div class="loader" id="loader" aria-hidden="true">
+  <canvas class="loader__crown" id="loaderCrown"></canvas>
+  <div class="loader__meta">
+    <span>Throne Records</span>
+    <span class="loader__count" id="loaderCount">000</span>
+  </div>
+</div>
+
+<!-- ============ CURSOR ============ -->
+<div class="cursor" id="cursor" aria-hidden="true"><span class="cursor__label" id="cursorLabel"></span></div>
+<div class="artist-float" id="artistFloat" aria-hidden="true"><img alt="" id="artistFloatImg"></div>
+<div class="show-peek" id="showPeek" aria-hidden="true"><img alt="" id="showPeekImg"></div>
+
+<!-- ============ PAGE TRANSITION ============ -->
+<div class="curtain" id="curtain" aria-hidden="true">
+  <div class="curtain__cols"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <p class="curtain__label" id="curtainLabel"></p>
+</div>
+
+<!-- ============ LIGHTBOX ============ -->
+<div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="Photo viewer">
+  <img class="lightbox__img" id="lightboxImg" alt="">
+  <p class="lightbox__count" id="lightboxCount"></p>
+  <button class="lightbox__btn lightbox__close" type="button" data-lb="close">Close</button>
+  <button class="lightbox__btn lightbox__prev" type="button" data-lb="prev" aria-label="Previous photo">←</button>
+  <button class="lightbox__btn lightbox__next" type="button" data-lb="next" aria-label="Next photo">→</button>
+</div>
+
+<!-- ============ HEADER ============ -->
+<header class="nav" id="nav">
+  <a class="nav__brand" href="./" aria-label="Throne Records home">
+    <svg class="nav__crown" viewBox="0 0 38 22" aria-hidden="true"><use href="#crownMark"/></svg>
+    <span>Throne</span>
+  </a>
+  <nav class="nav__links" aria-label="Primary">
+    <a href="./#artists" data-magnetic>Artists</a>
+    <a href="./#music" data-magnetic>Music</a>
+    <a href="shows.html" data-magnetic>Shows</a>
+    <a href="wear.html" data-magnetic>Wear</a>
+    <a href="./#contact" data-magnetic>Contact</a>
+  </nav>
+  <button class="nav__listen" type="button" data-play="how-far" data-cursor="Play" data-magnetic>
+    <span class="eq-mini" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+    <span class="nav__listen-text">Listen</span>
+  </button>
+  <button class="nav__burger" id="burger" type="button" aria-expanded="false" aria-controls="menu" aria-label="Open menu">
+    <span></span><span></span>
+  </button>
+</header>
+
+<div class="menu" id="menu" hidden>
+  <nav class="menu__links" aria-label="Mobile">
+    <a href="./#artists"><small>01</small>Artists</a>
+    <a href="./#music"><small>02</small>Music</a>
+    <a href="shows.html"><small>03</small>Shows</a>
+    <a href="wear.html"><small>04</small>Wear</a>
+    <a href="./#contact"><small>05</small>Contact</a>
+  </nav>
+  <p class="menu__foot">Lagos · Moscow · London</p>
+</div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- Crown mark: dot-matrix, echoing the logo -->
+    <symbol id="crownMark" viewBox="0 0 38 22">
+      <g fill="currentColor">
+        <circle cx="3" cy="3" r="1.6"/><circle cx="19" cy="2" r="1.6"/><circle cx="35" cy="3" r="1.6"/>
+        <circle cx="11" cy="6" r="1.6"/><circle cx="27" cy="6" r="1.6"/>
+        <circle cx="3" cy="8" r="1.6"/><circle cx="19" cy="7" r="1.6"/><circle cx="35" cy="8" r="1.6"/>
+        <circle cx="7" cy="11" r="1.6"/><circle cx="11" cy="11" r="1.6"/><circle cx="15" cy="11" r="1.6"/><circle cx="19" cy="12" r="1.6"/><circle cx="23" cy="11" r="1.6"/><circle cx="27" cy="11" r="1.6"/><circle cx="31" cy="11" r="1.6"/>
+        <circle cx="3" cy="13" r="1.6"/><circle cx="35" cy="13" r="1.6"/>
+        <circle cx="3" cy="18" r="1.6"/><circle cx="7" cy="18" r="1.6"/><circle cx="11" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/><circle cx="19" cy="18" r="1.6"/><circle cx="23" cy="18" r="1.6"/><circle cx="27" cy="18" r="1.6"/><circle cx="31" cy="18" r="1.6"/><circle cx="35" cy="18" r="1.6"/>
+      </g>
+    </symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path fill="currentColor" d="M7 4.5v15l13-7.5z"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><path fill="currentColor" d="M6 4h4.5v16H6zM13.5 4H18v16h-4.5z"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M5 19 19 5M8 5h11v11"/></symbol>
+  </defs>
+</svg>
+
+<main id="top" data-page="wear">
+
+  <section class="pg-hero pg-hero--wear" data-tone="light">
+    <div class="pg-hero__text">
+      <p class="eyebrow">Throne Wear · Capsule 01</p>
+      <h1 class="pg-title" aria-label="Dress like the crown"><span class="ap-line"><span>Dress like</span></span><span class="ap-line"><span>the crown</span></span></h1>
+      <p class="pg-lede">Music, lifestyle and fashion have always been one thing at Throne. The first capsule is in the works, and you can help shape it.</p>
+      <div class="ap-actions">
+        <a class="btn btn--gold" href="#design" data-magnetic>Design the first drop</a>
+        <a class="btn btn--ghost" href="#first-access" data-magnetic>Get first access</a>
+      </div>
+    </div>
+    <div class="wear-hero__looks">
+      <figure class="wear-hero__a"><img src="assets/img/cloths_product1.jpg" alt="Throne Wear, look 01"></figure>
+      <figure class="wear-hero__b"><img src="assets/img/cloths_product2.jpg" alt="Bros Throne on stage"></figure>
+      <svg class="badge" viewBox="0 0 200 200" aria-hidden="true">
+        <defs><path id="badgeCircle" d="M100 100 m-74 0 a74 74 0 1 1 148 0 a74 74 0 1 1 -148 0"/></defs>
+        <circle cx="100" cy="100" r="96" class="badge__bg"/>
+        <text class="badge__text"><textPath href="#badgeCircle">Capsule 01 · in the works · Capsule 01 · in the works ·</textPath></text>
+        <use href="#crownMark" x="72" y="84" width="56" height="32" class="badge__crown"/>
+      </svg>
+    </div>
+  </section>
+
+  <section class="studio" id="design" data-tone="dark">
+    <div class="section-head">
+      <h2 class="section-title" data-split>Design the first drop</h2>
+      <p class="section-note">Pick a colour and prints. Drag the tee to turn it. Your pick is a vote for what we make first.</p>
+    </div>
+    <div class="studio__grid">
+      <div class="tee-stage" data-tee-stage>
+        <div class="tee" data-tee data-colour="ink" data-front="crown" data-back="cities" data-cursor="Drag">
+        <svg class="tee__face tee__face--front" viewBox="0 0 400 460" role="img" aria-label="Tee, front">
+          <defs>
+            <linearGradient id="fold-front" x1="0" x2="1">
+              <stop offset="0" stop-color="#000" stop-opacity=".18"/><stop offset=".22" stop-color="#000" stop-opacity="0"/>
+              <stop offset=".78" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".2"/>
+            </linearGradient>
+          </defs>
+          <path class="tee__body" d="M140 22 Q200 70 260 22 L330 46 L392 118 L342 166 L312 140 L312 444 L88 444 L88 140 L58 166 L8 118 L70 46 Z"/>
+          
+          <g class="tee__print" data-print="crown"><use href="#crownMark" x="150" y="140" width="100" height="58"/></g>
+          <g class="tee__print" data-print="wordmark"><text x="200" y="196" text-anchor="middle" class="tee__type" font-size="62">THRONE</text></g>
+          <g class="tee__print" data-print="bgs"><text x="200" y="178" text-anchor="middle" class="tee__type" font-size="54">BIG GOD</text><text x="200" y="228" text-anchor="middle" class="tee__type" font-size="54">SZN</text></g>
+          <path d="M140 22 Q200 70 260 22 L330 46 L392 118 L342 166 L312 140 L312 444 L88 444 L88 140 L58 166 L8 118 L70 46 Z" fill="url(#fold-front)"/>
+          <path class="tee__collar" d="M140 22 Q200 70 260 22"/>
+          <path class="tee__rim" d="M140 22 Q200 70 260 22 L330 46 L392 118 L342 166 L312 140 L312 444 L88 444 L88 140 L58 166 L8 118 L70 46 Z"/>
+        </svg>
+        <svg class="tee__face tee__face--back" viewBox="0 0 400 460" role="img" aria-label="Tee, back">
+          <defs>
+            <linearGradient id="fold-back" x1="0" x2="1">
+              <stop offset="0" stop-color="#000" stop-opacity=".18"/><stop offset=".22" stop-color="#000" stop-opacity="0"/>
+              <stop offset=".78" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".2"/>
+            </linearGradient>
+          </defs>
+          <path class="tee__body" d="M140 22 Q200 44 260 22 L330 46 L392 118 L342 166 L312 140 L312 444 L88 444 L88 140 L58 166 L8 118 L70 46 Z"/>
+          
+          <g class="tee__print" data-print="cities"><use href="#crownMark" x="176" y="96" width="48" height="28"/><text x="200" y="178" text-anchor="middle" class="tee__type" font-size="46">LAGOS</text><text x="200" y="226" text-anchor="middle" class="tee__type" font-size="46">MOSCOW</text><text x="200" y="274" text-anchor="middle" class="tee__type" font-size="46">LONDON</text></g>
+          <g class="tee__print" data-print="bgs"><text x="200" y="200" text-anchor="middle" class="tee__type" font-size="92">BIG GOD</text><text x="200" y="286" text-anchor="middle" class="tee__type" font-size="92">SZN</text></g>
+          <g class="tee__print" data-print="wordmark"><text x="200" y="250" text-anchor="middle" class="tee__type" font-size="96">THRONE</text></g>
+          <path d="M140 22 Q200 44 260 22 L330 46 L392 118 L342 166 L312 140 L312 444 L88 444 L88 140 L58 166 L8 118 L70 46 Z" fill="url(#fold-back)"/>
+          <path class="tee__collar" d="M140 22 Q200 44 260 22"/>
+          <path class="tee__rim" d="M140 22 Q200 44 260 22 L330 46 L392 118 L342 166 L312 140 L312 444 L88 444 L88 140 L58 166 L8 118 L70 46 Z"/>
+        </svg>
+        </div>
+        <p class="tee-stage__side" data-tee-side>Front</p>
+      </div>
+      <form class="studio__controls" id="teeForm" novalidate>
+        <fieldset class="swatches">
+          <legend>Colour</legend>
+          <input type="radio" name="teeColour" id="tc-ink" value="ink" checked><label for="tc-ink"><i style="--sw:#0c0b09"></i>Ink</label>
+          <input type="radio" name="teeColour" id="tc-bone" value="bone"><label for="tc-bone"><i style="--sw:#efe8d8"></i>Bone</label>
+          <input type="radio" name="teeColour" id="tc-gold" value="gold"><label for="tc-gold"><i style="--sw:#e3ad48"></i>Gold</label>
+        </fieldset>
+        <fieldset class="topics">
+          <legend>Front print</legend>
+          <input type="radio" name="teeFront" id="teeFront-crown" value="crown" checked><label for="teeFront-crown">Crown mark</label>
+          <input type="radio" name="teeFront" id="teeFront-wordmark" value="wordmark"><label for="teeFront-wordmark">THRONE</label>
+          <input type="radio" name="teeFront" id="teeFront-bgs" value="bgs"><label for="teeFront-bgs">Big God SZN</label>
+          <input type="radio" name="teeFront" id="teeFront-none" value="none"><label for="teeFront-none">Blank</label>
+        </fieldset>
+        <fieldset class="topics">
+          <legend>Back print</legend>
+          <input type="radio" name="teeBack" id="teeBack-cities" value="cities" checked><label for="teeBack-cities">Lagos · Moscow · London</label>
+          <input type="radio" name="teeBack" id="teeBack-bgs" value="bgs"><label for="teeBack-bgs">Big God SZN</label>
+          <input type="radio" name="teeBack" id="teeBack-wordmark" value="wordmark"><label for="teeBack-wordmark">THRONE</label>
+          <input type="radio" name="teeBack" id="teeBack-none" value="none"><label for="teeBack-none">Blank</label>
+        </fieldset>
+        <div class="studio__actions">
+          <button class="btn btn--ghost" type="button" data-tee-flip data-magnetic>Turn it around</button>
+          <button class="btn btn--gold" type="submit" data-magnetic>Vote for this tee</button>
+        </div>
+        <p class="studio__summary" data-tee-summary aria-live="polite"></p>
+        <p class="form-msg" id="teeMsg" role="status"></p>
+      </form>
+    </div>
+  </section>
+
+  <section class="mood" data-tone="light">
+    <div class="section-head">
+      <h2 class="section-title" data-split>How the roster dresses</h2>
+      <p class="section-note"><span class="hint-desktop">Hover a photo to look closer. Drag the strip to browse.</span><span class="hint-touch">Swipe the strip. Tap a photo to open it.</span></p>
+    </div>
+    <div class="mood__strip" data-strip>
+      <button class="look" type="button" data-cursor="Zoom"><span class="look__frame"><img src="assets/img/featured_fet1_1.jpg" alt="Bros Throne, Pinstripes" loading="lazy" draggable="false"><span class="look__lens" aria-hidden="true"></span></span><span class="look__cap"><b>Bros Throne</b><span>Pinstripes</span></span></button>
+      <button class="look" type="button" data-cursor="Zoom"><span class="look__frame"><img src="assets/img/artist_kid11.jpg" alt="Kidd Carder, Camo" loading="lazy" draggable="false"><span class="look__lens" aria-hidden="true"></span></span><span class="look__cap"><b>Kidd Carder</b><span>Camo</span></span></button>
+      <button class="look" type="button" data-cursor="Zoom"><span class="look__frame"><img src="assets/img/cloths_product1.jpg" alt="Throne Wear, Look 01" loading="lazy" draggable="false"><span class="look__lens" aria-hidden="true"></span></span><span class="look__cap"><b>Throne Wear</b><span>Look 01</span></span></button>
+      <button class="look" type="button" data-cursor="Zoom"><span class="look__frame"><img src="assets/img/portfolio_kid22.jpg" alt="Kidd Carder, Varsity" loading="lazy" draggable="false"><span class="look__lens" aria-hidden="true"></span></span><span class="look__cap"><b>Kidd Carder</b><span>Varsity</span></span></button>
+      <button class="look" type="button" data-cursor="Zoom"><span class="look__frame"><img src="assets/img/artist_lil_case.jpg" alt="Lilcase, Studio" loading="lazy" draggable="false"><span class="look__lens" aria-hidden="true"></span></span><span class="look__cap"><b>Lilcase</b><span>Studio</span></span></button>
+      <button class="look" type="button" data-cursor="Zoom"><span class="look__frame"><img src="assets/img/featured_fet1_2.jpg" alt="Bros Throne, Black tie" loading="lazy" draggable="false"><span class="look__lens" aria-hidden="true"></span></span><span class="look__cap"><b>Bros Throne</b><span>Black tie</span></span></button>
+      <button class="look" type="button" data-cursor="Zoom"><span class="look__frame"><img src="assets/img/cloths_product2.jpg" alt="Bros Throne, Stage" loading="lazy" draggable="false"><span class="look__lens" aria-hidden="true"></span></span><span class="look__cap"><b>Bros Throne</b><span>Stage</span></span></button>
+      <button class="look" type="button" data-cursor="Zoom"><span class="look__frame"><img src="assets/img/featured_fet_kid1.jpg" alt="Kidd Carder, Chains" loading="lazy" draggable="false"><span class="look__lens" aria-hidden="true"></span></span><span class="look__cap"><b>Kidd Carder</b><span>Chains</span></span></button>
+    </div>
+  </section>
+
+  <section class="notify" id="first-access" data-tone="dark">
+    <h2 class="notify__title" data-split>First access</h2>
+    <p class="notify__text">Leave your email and you will hear about Capsule 01 before anyone else.</p>
+    <form class="inline-form" id="dropForm" novalidate>
+      <label class="sr-only" for="dropEmail">Email for the drop</label>
+      <input id="dropEmail" type="email" placeholder="Email for first access" autocomplete="email" required>
+      <button class="btn btn--gold" type="submit" data-magnetic>Notify me</button>
+      <p class="form-msg" id="dropMsg" role="status"></p>
+    </form>
+  </section>
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="footer" data-tone="dark">
+  <div class="footer__top">
+    <ul class="socials">
+      <li><a href="https://www.instagram.com/brosthrone" target="_blank" rel="noopener" data-magnetic>Instagram</a></li>
+      <li><a href="https://www.youtube.com/@BrosThrone" target="_blank" rel="noopener" data-magnetic>YouTube</a></li>
+      <li><a href="https://x.com/brosthrone" target="_blank" rel="noopener" data-magnetic>X</a></li>
+      <li><a href="https://www.facebook.com/brosthrone" target="_blank" rel="noopener" data-magnetic>Facebook</a></li>
+      <li><a href="https://www.snapchat.com/add/brosthrone" target="_blank" rel="noopener" data-magnetic>Snapchat</a></li>
+    </ul>
+    <a class="footer__up" href="#top" data-magnetic>Back to top ↑</a>
+  </div>
+  <p class="footer__word" aria-hidden="true">THRONE</p>
+  <div class="footer__base">
+    <span>© Throne Records 2026</span>
+    <span>Lagos · Moscow · London</span>
+  </div>
+</footer>
+
+<!-- ============ PLAYER ============ -->
+<div class="player" id="player" aria-label="Audio player">
+  <img class="player__art" id="playerArt" src="assets/img/featured_fet1_1.jpg" alt="">
+  <div class="player__info">
+    <strong id="playerTitle">How Far</strong>
+    <span id="playerArtist">Bros Throne</span>
+  </div>
+  <button class="player__toggle" id="playerToggle" type="button" aria-label="Play">
+    <svg id="playerIcon"><use href="#i-play"/></svg>
+  </button>
+  <div class="player__bar">
+    <span class="player__time" id="playerCur">0:00</span>
+    <input class="player__seek" id="playerSeek" type="range" min="0" max="1000" value="0" aria-label="Seek">
+    <span class="player__time" id="playerDur">0:00</span>
+  </div>
+  <button class="player__next" id="playerNext" type="button" aria-label="Next track">Next</button>
+  <audio id="audio" preload="none"></audio>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

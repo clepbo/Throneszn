@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en" data-tone="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Shows — Throne Records</title>
+<meta name="description" content="Where Throne Records has played, where it is going next, and how to bring the roster to your city.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;900&family=Hanken+Grotesk:wght@400;500;600&family=Martian+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="css/style.css">
+<meta name="site-root" content="./">
+</head>
+<body class="is-loading" data-page="shows">
+
+<!-- ============ LOADER ============ -->
+<div class="loader" id="loader" aria-hidden="true">
+  <canvas class="loader__crown" id="loaderCrown"></canvas>
+  <div class="loader__meta">
+    <span>Throne Records</span>
+    <span class="loader__count" id="loaderCount">000</span>
+  </div>
+</div>
+
+<!-- ============ CURSOR ============ -->
+<div class="cursor" id="cursor" aria-hidden="true"><span class="cursor__label" id="cursorLabel"></span></div>
+<div class="artist-float" id="artistFloat" aria-hidden="true"><img alt="" id="artistFloatImg"></div>
+<div class="show-peek" id="showPeek" aria-hidden="true"><img alt="" id="showPeekImg"></div>
+
+<!-- ============ PAGE TRANSITION ============ -->
+<div class="curtain" id="curtain" aria-hidden="true">
+  <div class="curtain__cols"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <p class="curtain__label" id="curtainLabel"></p>
+</div>
+
+<!-- ============ LIGHTBOX ============ -->
+<div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="Photo viewer">
+  <img class="lightbox__img" id="lightboxImg" alt="">
+  <p class="lightbox__count" id="lightboxCount"></p>
+  <button class="lightbox__btn lightbox__close" type="button" data-lb="close">Close</button>
+  <button class="lightbox__btn lightbox__prev" type="button" data-lb="prev" aria-label="Previous photo">←</button>
+  <button class="lightbox__btn lightbox__next" type="button" data-lb="next" aria-label="Next photo">→</button>
+</div>
+
+<!-- ============ HEADER ============ -->
+<header class="nav" id="nav">
+  <a class="nav__brand" href="./" aria-label="Throne Records home">
+    <svg class="nav__crown" viewBox="0 0 38 22" aria-hidden="true"><use href="#crownMark"/></svg>
+    <span>Throne</span>
+  </a>
+  <nav class="nav__links" aria-label="Primary">
+    <a href="./#artists" data-magnetic>Artists</a>
+    <a href="./#music" data-magnetic>Music</a>
+    <a href="shows.html" data-magnetic>Shows</a>
+    <a href="wear.html" data-magnetic>Wear</a>
+    <a href="./#contact" data-magnetic>Contact</a>
+  </nav>
+  <button class="nav__listen" type="button" data-play="how-far" data-cursor="Play" data-magnetic>
+    <span class="eq-mini" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+    <span class="nav__listen-text">Listen</span>
+  </button>
+  <button class="nav__burger" id="burger" type="button" aria-expanded="false" aria-controls="menu" aria-label="Open menu">
+    <span></span><span></span>
+  </button>
+</header>
+
+<div class="menu" id="menu" hidden>
+  <nav class="menu__links" aria-label="Mobile">
+    <a href="./#artists"><small>01</small>Artists</a>
+    <a href="./#music"><small>02</small>Music</a>
+    <a href="shows.html"><small>03</small>Shows</a>
+    <a href="wear.html"><small>04</small>Wear</a>
+    <a href="./#contact"><small>05</small>Contact</a>
+  </nav>
+  <p class="menu__foot">Lagos · Moscow · London</p>
+</div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- Crown mark: dot-matrix, echoing the logo -->
+    <symbol id="crownMark" viewBox="0 0 38 22">
+      <g fill="currentColor">
+        <circle cx="3" cy="3" r="1.6"/><circle cx="19" cy="2" r="1.6"/><circle cx="35" cy="3" r="1.6"/>
+        <circle cx="11" cy="6" r="1.6"/><circle cx="27" cy="6" r="1.6"/>
+        <circle cx="3" cy="8" r="1.6"/><circle cx="19" cy="7" r="1.6"/><circle cx="35" cy="8" r="1.6"/>
+        <circle cx="7" cy="11" r="1.6"/><circle cx="11" cy="11" r="1.6"/><circle cx="15" cy="11" r="1.6"/><circle cx="19" cy="12" r="1.6"/><circle cx="23" cy="11" r="1.6"/><circle cx="27" cy="11" r="1.6"/><circle cx="31" cy="11" r="1.6"/>
+        <circle cx="3" cy="13" r="1.6"/><circle cx="35" cy="13" r="1.6"/>
+        <circle cx="3" cy="18" r="1.6"/><circle cx="7" cy="18" r="1.6"/><circle cx="11" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/><circle cx="19" cy="18" r="1.6"/><circle cx="23" cy="18" r="1.6"/><circle cx="27" cy="18" r="1.6"/><circle cx="31" cy="18" r="1.6"/><circle cx="35" cy="18" r="1.6"/>
+      </g>
+    </symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path fill="currentColor" d="M7 4.5v15l13-7.5z"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><path fill="currentColor" d="M6 4h4.5v16H6zM13.5 4H18v16h-4.5z"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M5 19 19 5M8 5h11v11"/></symbol>
+  </defs>
+</svg>
+
+<main id="top" data-page="shows">
+
+  <section class="pg-hero pg-hero--shows" data-tone="dark">
+    <div class="pg-hero__text">
+      <p class="eyebrow">Shows &amp; drops</p>
+      <h1 class="pg-title" aria-label="On the road"><span class="ap-line"><span>On the</span></span><span class="ap-line"><span>road</span></span></h1>
+      <p class="pg-lede">Three home bases, one sound. The 2026 dates are being booked now. Until they land, here is where Throne has been. Tap a city on the map.</p>
+      <div class="ap-actions">
+        <a class="btn btn--gold" href="#request" data-magnetic>Bring Throne to your city</a>
+        <a class="btn btn--ghost" href="./#contact" data-magnetic>Book an artist</a>
+      </div>
+    </div>
+    <div class="map" data-map data-mask="00000fdffbffff80060007001f800000,00000feff01fff8000001c07ffc07800,80801feefe0fff00000030fffffdfc00,07ffffffff0fff0003f80fffffffffff,e7ffffffe7c7f8200fffffffffffffff,efffffffef87c1e01fffffffffffffff,07fffffe3f8380003fffffffffffffff,07fffffe0fc080003efffffffffffe78,01c0ffff8fc000021dffffffffffc1c0,06007fffeff000071fffffffffff81c0,00003fffeff8000fffffffffffffe180,00003ffffff80003fffffffffffff000,00001fffffdc0003ffffffffffffe000,00000fffffe00001ffffbfffffffa000,00001ffffe000007ffc3bfffffff3000,00000ffffe00000f97ffdffffffc6000,00000ffff800000f1dffdffffffc4000,000007fff8000003f09fffffffe5c000,000003fff000000ff98fffffffe30000,000003ffe000000ffffffffffff00000,000001fc3000001ffffffffffff00000,000000fc1800003fffffffffffe00000,000000fc3000003ffffff8ffffe00000,0180003c8c00003ffffff87eff000000,0000001f8f80003ffffff83c7e100000,0000000fc000003ffffde0387e300000,00000001e000003fffffc0381e180000,0000000067c0003fffffc0181e180000,000000003fe0001fffffc01814180000,000000000ff8000fffffc00818480000,000000000ffc00043fff800038c00000,000000001ffc00001fff000019fc0000,000000001fff00001ffe000019f30000,000000001fffe0001ffe00000df7f200,000000001ffff0000ffc000006317d00,000000001ffff0000ffc000003f87880,000000000fffe0000ffe000000000c40,000000000fffe0000ffe40000003a000,0000000007ffc0000ffec000000fb010,0000000003ffc0000ffdc000001ff001,0000000001ffc0000ff9c000007ff820,0000000001ff800007f9800000fffc00,0000000001fe000007f1800000fffe00,0000000003fe000007f0000000fffe00,0000000003fc000003e00000007ffe00,0000000003fc000003e00000007dfc00,0000000003f80000030000000060fc04,0000000003f000000000000000003c02,0000000003c000000000000000001006,0000000007c000000000000000001804,00000000078000000000000000000018,00000000078000000000000000000000,00000000070000000000008000000000,00000000072000000000000000000000,00000000038000000000000000000000,00000000000000000000000000000000">
+      <canvas class="map__canvas" aria-hidden="true"></canvas>
+      <button class="map__pin" type="button" data-city="nigeria" data-lat="6.52" data-lon="3.38" data-cursor="Filter" aria-label="Lagos: 0 archived shows"><span class="map__dot" aria-hidden="true"></span><span class="map__label">Lagos<small>Roots</small></span></button>
+      <button class="map__pin" type="button" data-city="russia" data-lat="55.75" data-lon="37.62" data-cursor="Filter" aria-label="Moscow: 3 archived shows"><span class="map__dot" aria-hidden="true"></span><span class="map__label">Moscow<small>Studio &amp; shows</small></span></button>
+      <button class="map__pin" type="button" data-city="uk" data-lat="51.5" data-lon="-0.13" data-cursor="Filter" aria-label="London: 0 archived shows"><span class="map__dot" aria-hidden="true"></span><span class="map__label">London<small>Label office</small></span></button>
+    </div>
+  </section>
+
+  <section class="archive" id="archive" data-tone="light">
+    <div class="section-head">
+      <h2 class="section-title" data-split>The archive</h2>
+      <p class="section-note" data-archive-count aria-live="polite">3 shows and drops</p>
+    </div>
+    <div class="chips" role="group" aria-label="Filter by country">
+        <button type="button" class="chip" data-filter="all" aria-pressed="true">All <span>03</span></button>
+        <button type="button" class="chip" data-filter="nigeria" aria-pressed="false">Nigeria <span>00</span></button>
+        <button type="button" class="chip" data-filter="russia" aria-pressed="false">Russia <span>03</span></button>
+        <button type="button" class="chip" data-filter="uk" aria-pressed="false">UK <span>00</span></button>
+    </div>
+    <ol class="arc-list">
+      <li class="arc" data-country="russia" data-img="assets/img/artist_bros.jpg">
+        <button class="arc__row" type="button" aria-expanded="false" aria-controls="arc-0">
+          <time class="arc__date" datetime="2024-06-29"><b>29</b> Jun 2024</time>
+          <span class="arc__title">Afro Music Live in Moscow</span>
+          <span class="arc__place">Moscow, RU</span>
+          <span class="arc__tag">Played</span>
+          <span class="arc__plus" aria-hidden="true"></span>
+        </button>
+        <div class="arc__panel" id="arc-0">
+          <div class="arc__inner">
+            <figure class="arc__img"><img src="assets/img/artist_bros.jpg" alt="Bros Throne performing live" loading="lazy"><p class="arc__credit">Photo: Bros Throne live</p></figure>
+            <div class="arc__body">
+              <p class="eyebrow">Live show</p>
+              <p class="arc__text">An Afro music night in Moscow, bringing the Throne Records sound to a live room.</p>
+              <dl class="arc__facts"><div><dt>Date</dt><dd>29 Jun 2024</dd></div><div><dt>Where</dt><dd>Moscow, RU</dd></div></dl>
+              
+            </div>
+          </div>
+        </div>
+      </li>
+      <li class="arc" data-country="russia" data-img="assets/img/event_big1.jpg">
+        <button class="arc__row" type="button" aria-expanded="false" aria-controls="arc-1">
+          <time class="arc__date" datetime="2024-06-07"><b>07</b> Jun 2024</time>
+          <span class="arc__title">Big God SZN — EP launch</span>
+          <span class="arc__place">Russia</span>
+          <span class="arc__tag">Released</span>
+          <span class="arc__plus" aria-hidden="true"></span>
+        </button>
+        <div class="arc__panel" id="arc-1">
+          <div class="arc__inner">
+            <figure class="arc__img"><img src="assets/img/event_big1.jpg" alt="Big God SZN cover art" loading="lazy"></figure>
+            <div class="arc__body">
+              <p class="eyebrow">EP launch</p>
+              <p class="arc__text">Times were changing. Clothes were changing. Morals were changing. Big God SZN never changed. The debut EP from Bros Throne.</p>
+              <dl class="arc__facts"><div><dt>Date</dt><dd>07 Jun 2024</dd></div><div><dt>Where</dt><dd>Russia</dd></div></dl>
+              <a class="btn btn--gold" href="https://www.youtube.com/@BrosThrone" target="_blank" rel="noopener">Watch on YouTube <svg><use href="#i-arrow"/></svg></a>
+            </div>
+          </div>
+        </div>
+      </li>
+      <li class="arc" data-country="russia" data-img="assets/img/event_blaq_event1.jpg">
+        <button class="arc__row" type="button" aria-expanded="false" aria-controls="arc-2">
+          <time class="arc__date" datetime="2024-04-19"><b>19</b> Apr 2024</time>
+          <span class="arc__title">ASAP ft. Blaq Bonez</span>
+          <span class="arc__place">Russia</span>
+          <span class="arc__tag">Released</span>
+          <span class="arc__plus" aria-hidden="true"></span>
+        </button>
+        <div class="arc__panel" id="arc-2">
+          <div class="arc__inner">
+            <figure class="arc__img"><img src="assets/img/event_blaq_event1.jpg" alt="ASAP single artwork" loading="lazy"></figure>
+            <div class="arc__body">
+              <p class="eyebrow">Single</p>
+              <p class="arc__text">A new record collaboration between Bros Throne and Blaq Bonez.</p>
+              <dl class="arc__facts"><div><dt>Date</dt><dd>19 Apr 2024</dd></div><div><dt>Where</dt><dd>Russia</dd></div></dl>
+              <a class="btn btn--gold" href="https://www.youtube.com/@BrosThrone" target="_blank" rel="noopener">Watch on YouTube <svg><use href="#i-arrow"/></svg></a>
+            </div>
+          </div>
+        </div>
+      </li>
+    </ol>
+    <p class="arc-empty" data-archive-empty hidden>Nothing in the archive here yet. Ask for a date below and we will take it to the label.</p>
+  </section>
+
+  <section class="request" id="request" data-tone="dark">
+    <div class="request__copy">
+      <h2 class="section-title" data-split>Bring Throne to your city</h2>
+      <p class="request__text">Tell us where you are and who you want to see. Requests help decide where the 2026 dates land.</p>
+      <form class="request__form" id="requestForm" novalidate>
+        <div class="field"><input id="rqCity" type="text" placeholder=" " autocomplete="address-level2" maxlength="28" required><label for="rqCity">Your city</label></div>
+        <fieldset class="topics">
+          <legend>Who do you want to see?</legend>
+        <input type="checkbox" name="rqArtist" id="rq-bros-throne" value="Bros Throne"><label for="rq-bros-throne">Bros Throne</label>
+        <input type="checkbox" name="rqArtist" id="rq-kidd-carder" value="Kidd Carder"><label for="rq-kidd-carder">Kidd Carder</label>
+        <input type="checkbox" name="rqArtist" id="rq-lilcase" value="Lilcase"><label for="rq-lilcase">Lilcase</label>
+        </fieldset>
+        <div class="field"><input id="rqEmail" type="email" placeholder=" " autocomplete="email" required><label for="rqEmail">Email for the announcement</label></div>
+        <button class="btn btn--gold btn--wide" type="submit" data-magnetic>Send request <svg><use href="#i-arrow"/></svg></button>
+        <p class="form-msg" id="requestMsg" role="status"></p>
+      </form>
+    </div>
+    <div class="ticket-wrap" aria-hidden="true">
+      <div class="ticket" data-ticket>
+        <div class="ticket__main">
+          <p class="ticket__k">Throne Records presents</p>
+          <p class="ticket__city" data-ticket-city>Your city</p>
+          <p class="ticket__who" data-ticket-who>The whole roster</p>
+          <div class="ticket__row"><span>2026</span><span>Date TBA</span><span>Admit one</span></div>
+        </div>
+        <div class="ticket__stub">
+          <svg class="ticket__crown" viewBox="0 0 38 22"><use href="#crownMark"/></svg>
+          <span class="ticket__code" data-ticket-code>TR-0000</span>
+        </div>
+      </div>
+      <p class="ticket__note">Your ticket updates as you type.</p>
+    </div>
+  </section>
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="footer" data-tone="dark">
+  <div class="footer__top">
+    <ul class="socials">
+      <li><a href="https://www.instagram.com/brosthrone" target="_blank" rel="noopener" data-magnetic>Instagram</a></li>
+      <li><a href="https://www.youtube.com/@BrosThrone" target="_blank" rel="noopener" data-magnetic>YouTube</a></li>
+      <li><a href="https://x.com/brosthrone" target="_blank" rel="noopener" data-magnetic>X</a></li>
+      <li><a href="https://www.facebook.com/brosthrone" target="_blank" rel="noopener" data-magnetic>Facebook</a></li>
+      <li><a href="https://www.snapchat.com/add/brosthrone" target="_blank" rel="noopener" data-magnetic>Snapchat</a></li>
+    </ul>
+    <a class="footer__up" href="#top" data-magnetic>Back to top ↑</a>
+  </div>
+  <p class="footer__word" aria-hidden="true">THRONE</p>
+  <div class="footer__base">
+    <span>© Throne Records 2026</span>
+    <span>Lagos · Moscow · London</span>
+  </div>
+</footer>
+
+<!-- ============ PLAYER ============ -->
+<div class="player" id="player" aria-label="Audio player">
+  <img class="player__art" id="playerArt" src="assets/img/featured_fet1_1.jpg" alt="">
+  <div class="player__info">
+    <strong id="playerTitle">How Far</strong>
+    <span id="playerArtist">Bros Throne</span>
+  </div>
+  <button class="player__toggle" id="playerToggle" type="button" aria-label="Play">
+    <svg id="playerIcon"><use href="#i-play"/></svg>
+  </button>
+  <div class="player__bar">
+    <span class="player__time" id="playerCur">0:00</span>
+    <input class="player__seek" id="playerSeek" type="range" min="0" max="1000" value="0" aria-label="Seek">
+    <span class="player__time" id="playerDur">0:00</span>
+  </div>
+  <button class="player__next" id="playerNext" type="button" aria-label="Next track">Next</button>
+  <audio id="audio" preload="none"></audio>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

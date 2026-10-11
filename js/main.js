@@ -125,6 +125,71 @@
     }
   }
 
+  // Dot-matrix world map: land from Natural Earth, three home bases, live arcs between them.
+  const MAP_W = 128, MAP_H = 56, LAT_TOP = 78, LAT_SPAN = 136;
+  // window onto the world grid: Europe + Africa, where the three bases are
+  const VIEW = { c0: 54, c1: 88, r0: 2, r1: 38 };
+  const VIEW_W = VIEW.c1 - VIEW.c0, VIEW_H = VIEW.r1 - VIEW.r0;
+  const project = (lat, lon) => ({
+    x: ((lon + 180) / 360 * MAP_W - VIEW.c0) / VIEW_W,
+    y: ((LAT_TOP - lat) / LAT_SPAN * MAP_H - VIEW.r0) / VIEW_H,
+  });
+  class DotMap extends Canvas2D {
+    constructor(canvas, mask, cities) {
+      super(canvas);
+      this.land = mask.split(',').map(hex => {
+        let bits = ''; for (const ch of hex) bits += parseInt(ch, 16).toString(2).padStart(4, '0');
+        return bits.slice(-MAP_W);
+      });
+      this.cities = cities; this.active = null;
+    }
+    layout() { this.cell = this.w / VIEW_W; }
+    draw(t) {
+      if (!this.visible || !this.w || !this.land) return;
+      const { ctx, cell } = this;
+      ctx.clearRect(0, 0, this.w, this.h);
+      const rect = this.cv.getBoundingClientRect();
+      const px = pointer.x - rect.left, py = pointer.y - rect.top;
+      const pulse = 1 + audioEnergy * 2.2;
+      const pts = this.cities.map(c => ({ ...c, X: c.x * this.w, Y: c.y * this.h }));
+      for (let r = VIEW.r0; r < VIEW.r1; r++) {
+        const row = this.land[r];
+        for (let c = VIEW.c0; c < VIEW.c1; c++) {
+          const land = row[c] === '1';
+          const x = (c - VIEW.c0) * cell + cell / 2, y = (r - VIEW.r0) * cell + cell / 2;
+          if (!land) { ctx.globalAlpha = 0.07; ctx.fillStyle = '#9a907d'; ctx.beginPath(); ctx.arc(x, y, cell * 0.1, 0, Math.PI * 2); ctx.fill(); continue; }
+          let a = 0.3, size = cell * 0.3, col = '#9a907d';
+          for (const p of pts) {
+            const d = Math.hypot(x - p.X, y - p.Y), R = cell * 3.2 * pulse;
+            if (d < R) { const f = 1 - d / R; a = Math.max(a, 0.3 + f * 0.7); col = '#e3ad48'; size = Math.max(size, cell * (0.3 + f * 0.1)); }
+          }
+          if (finePointer) {
+            const d = Math.hypot(x - px, y - py), R = cell * 3;
+            if (d < R) { const f = 1 - d / R; a = Math.max(a, 0.3 + f * 0.7); size *= 1 + f * 0.35; col = '#e3ad48'; }
+          }
+          ctx.globalAlpha = a; ctx.fillStyle = col;
+          ctx.beginPath(); ctx.arc(x, y, size, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+      // arcs between the bases, with a dot travelling along each
+      ctx.lineWidth = 1.2;
+      for (let i = 0; i < pts.length; i++) {
+        const a = pts[i], b = pts[(i + 1) % pts.length];
+        const mx = (a.X + b.X) / 2, my = (a.Y + b.Y) / 2 - Math.hypot(b.X - a.X, b.Y - a.Y) * 0.35;
+        const lit = this.active && (this.active === a.key || this.active === b.key);
+        ctx.globalAlpha = lit ? 0.9 : 0.45; ctx.strokeStyle = '#e3ad48';
+        ctx.setLineDash([3, 5]); ctx.beginPath(); ctx.moveTo(a.X, a.Y); ctx.quadraticCurveTo(mx, my, b.X, b.Y); ctx.stroke();
+        ctx.setLineDash([]);
+        const k = ((t * 0.00018) + i / pts.length) % 1;
+        const qx = (1 - k) * (1 - k) * a.X + 2 * (1 - k) * k * mx + k * k * b.X;
+        const qy = (1 - k) * (1 - k) * a.Y + 2 * (1 - k) * k * my + k * k * b.Y;
+        ctx.globalAlpha = 1; ctx.fillStyle = '#fff1c9';
+        ctx.beginPath(); ctx.arc(qx, qy, cell * 0.22, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+  }
+
   let visuals = []; // page-scoped visualizers
   let piles = [];   // page-scoped photo tables (they pulse with the music)
   let lastBeat = -1;
@@ -289,6 +354,7 @@
   const burger = $('#burger'), menu = $('#menu');
   function openMenu() {
     menu.hidden = false; burger.setAttribute('aria-expanded', 'true'); document.body.classList.add('menu-open');
+    setTimeout(() => { const first = $('.menu__links a', menu); if (first) first.focus({ preventScroll: true }); }, 50);
     lenis && lenis.stop();
     if (animate) {
       gsap.fromTo(menu, { clipPath: 'inset(0 0 100% 0)' }, { clipPath: 'inset(0 0 0% 0)', duration: 0.7, ease: 'expo.inOut' });
@@ -407,6 +473,17 @@
     if (act) { if (act.dataset.lb === 'close') closeLightbox(); else stepLightbox(act.dataset.lb === 'next' ? 1 : -1); }
     else if (e.target === lightbox) closeLightbox();
   });
+  // keep keyboard focus inside an open overlay
+  addEventListener('keydown', e => {
+    if (e.key !== 'Tab') return;
+    const layer = !lightbox.hidden ? lightbox : !menu.hidden ? menu : null;
+    if (!layer) return;
+    const items = $$('a[href], button:not([hidden])', layer).concat(layer === menu ? [burger] : []);
+    if (!items.length) return;
+    const i = items.indexOf(document.activeElement);
+    const next = e.shiftKey ? (i <= 0 ? items.length - 1 : i - 1) : (i === -1 || i === items.length - 1 ? 0 : i + 1);
+    e.preventDefault(); items[next].focus();
+  });
   addEventListener('keydown', e => {
     if (e.key === 'Escape') { closeMenu(); closeLightbox(); }
     if (!lightbox.hidden && e.key === 'ArrowRight') stepLightbox(1);
@@ -472,6 +549,7 @@
     bindMagnetic(main);
     bindRoster(main); bindShows(main); bindTilt(main); bindForms(main); bindClocks(main); bindCrate(main);
     bindTrail(main); bindPiles(main);
+    bindMap(main); bindArchive(main); bindRequest(main); bindTee(main); bindStrip(main);
 
     if (animate) {
       ctx = gsap.context(() => {
@@ -510,6 +588,15 @@
           gsap.to('.hero__crown', { yPercent: -30, scale: 0.9, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
           gsap.fromTo('.feature__cover', { yPercent: 8 }, { yPercent: -8, ease: 'none', scrollTrigger: { trigger: '.feature', start: 'top bottom', end: 'bottom top', scrub: true } });
           gsap.fromTo('.feature__disc', { xPercent: -30 }, { xPercent: 0, ease: 'power2.out', scrollTrigger: { trigger: '.feature', start: 'top 80%', end: 'center center', scrub: true } });
+        } else if (page === 'shows') {
+          rise('.chip', '.chips', { y: 20 });
+          rise('.arc', '.arc-list');
+          rise('.ticket-wrap', '.ticket-wrap', { y: 80 });
+        } else if (page === 'wear') {
+          rise('.studio__controls > *', '.studio__controls', { y: 30 });
+          rise('.look', '.mood__strip', { y: 80 });
+          gsap.fromTo('.wear-hero__a', { yPercent: 0 }, { yPercent: -8, ease: 'none', scrollTrigger: { trigger: '.pg-hero', start: 'top top', end: 'bottom top', scrub: true } });
+          gsap.fromTo('.wear-hero__b', { yPercent: 0 }, { yPercent: 10, ease: 'none', scrollTrigger: { trigger: '.pg-hero', start: 'top top', end: 'bottom top', scrub: true } });
         } else {
           rise('.ap-facts div', '.ap-facts');
           rise('.ap-bio p', '.ap-bio');
@@ -537,7 +624,12 @@
   function introPage(main) {
     if (!animate) return;
     const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
-    if (main.dataset.page === 'artist') {
+    if (main.dataset.page === 'shows' || main.dataset.page === 'wear') {
+      tl.from($$('.ap-line > span', main), { yPercent: 110, duration: 1.2, stagger: 0.08 })
+        .from($$('.pg-hero .eyebrow, .pg-lede, .pg-hero .ap-actions', main), { y: 24, opacity: 0, duration: 1, stagger: 0.07 }, 0.3)
+        .from($$('.map, .wear-hero__a, .wear-hero__b', main), { opacity: 0, y: 40, duration: 1.4, stagger: 0.12 }, 0.2)
+        .from($$('.badge', main), { scale: 0, duration: 1.2, ease: 'back.out(1.6)' }, 0.7);
+    } else if (main.dataset.page === 'artist') {
       tl.from($$('.ap-line > span', main), { yPercent: 110, duration: 1.2, stagger: 0.08 })
         .from($('.ap-hero__img', main), { clipPath: 'inset(100% 0% 0% 0%)', duration: 1.3, ease: 'expo.inOut' }, 0)
         .from($('.ap-hero__img img', main), { scale: 1.3, duration: 1.6 }, 0)
@@ -552,6 +644,201 @@
   }
 
   /* ---------- page binders ---------- */
+
+  // Shows map: pins positioned from lat/lon, clicking filters the archive.
+  function bindMap(main) {
+    const el = $('[data-map]', main);
+    if (!el) return;
+    const pins = $$('.map__pin', el);
+    const cities = pins.map(p => ({ key: p.dataset.city, ...project(+p.dataset.lat, +p.dataset.lon) }));
+    pins.forEach((p, i) => { p.style.setProperty('--x', `${cities[i].x * 100}%`); p.style.setProperty('--y', `${cities[i].y * 100}%`); });
+    const map = new DotMap($('.map__canvas', el), el.dataset.mask, cities);
+    visuals.push(map);
+    pins.forEach(p => p.addEventListener('click', () => {
+      main.dispatchEvent(new CustomEvent('throne:filter', { detail: p.dataset.city }));
+      const archive = $('#archive', main);
+      if (archive) scrollToTarget(archive);
+    }));
+    main.addEventListener('throne:filtered', e => {
+      map.active = e.detail === 'all' ? null : e.detail;
+      pins.forEach(p => p.classList.toggle('is-active', p.dataset.city === e.detail));
+    });
+  }
+
+  // Archive: country filter chips + expanding rows.
+  function bindArchive(main) {
+    const list = $('.arc-list', main);
+    if (!list) return;
+    const rows = $$('.arc', list), chips = $$('[data-filter]', main);
+    const count = $('[data-archive-count]', main), empty = $('[data-archive-empty]', main);
+    const names = { all: '', nigeria: ' in Nigeria', russia: ' in Russia', uk: ' in the UK' };
+    const apply = key => {
+      let n = 0;
+      rows.forEach(r => { const show = key === 'all' || r.dataset.country === key; r.classList.toggle('is-hidden', !show); if (show) n++; });
+      chips.forEach(c => c.setAttribute('aria-pressed', String(c.dataset.filter === key)));
+      count.textContent = `${n} ${n === 1 ? 'show or drop' : 'shows and drops'}${names[key] || ''}`;
+      empty.hidden = n > 0;
+      main.dispatchEvent(new CustomEvent('throne:filtered', { detail: key }));
+      if (animate) gsap.fromTo(rows.filter(r => !r.classList.contains('is-hidden')), { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, stagger: 0.06, ease: 'expo.out' });
+      if (hasGSAP) ScrollTrigger.refresh();
+    };
+    chips.forEach(c => c.addEventListener('click', () => apply(c.dataset.filter)));
+    main.addEventListener('throne:filter', e => apply(e.detail));
+    rows.forEach(r => {
+      const btn = $('.arc__row', r);
+      btn.addEventListener('click', () => {
+        const open = !r.classList.contains('is-open');
+        r.classList.toggle('is-open', open); btn.setAttribute('aria-expanded', String(open));
+        peek.classList.remove('is-on');
+        if (hasGSAP) setTimeout(() => ScrollTrigger.refresh(), 650);
+      });
+    });
+  }
+
+  // City request: a ticket that fills itself in as you type.
+  function bindRequest(main) {
+    const form = $('#requestForm', main);
+    if (!form) return;
+    const city = $('#rqCity', main), email = $('#rqEmail', main), msg = $('#requestMsg', main);
+    const ticket = $('[data-ticket]', main), tCity = $('[data-ticket-city]', main), tWho = $('[data-ticket-who]', main), tCode = $('[data-ticket-code]', main);
+    const boxes = $$('input[name="rqArtist"]', form);
+    const code = str => { let h = 7; for (const ch of str) h = (h * 31 + ch.charCodeAt(0)) % 9973; return `TR-${String(h).padStart(4, '0')}`; };
+    const bump = () => { ticket.classList.remove('is-bump'); void ticket.offsetWidth; ticket.classList.add('is-bump'); };
+    const update = () => {
+      const c = city.value.trim();
+      tCity.textContent = c || 'Your city';
+      const who = boxes.filter(b => b.checked).map(b => b.value);
+      tWho.textContent = who.length === 0 || who.length === boxes.length ? 'The whole roster' : who.join(' + ');
+      tCode.textContent = code(c.toLowerCase() + who.join());
+    };
+    city.addEventListener('input', update);
+    boxes.forEach(b => b.addEventListener('change', () => { update(); bump(); }));
+    if (finePointer && !reduced) {
+      const wrap = ticket.parentElement;
+      wrap.addEventListener('pointermove', e => {
+        const r = wrap.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5;
+        ticket.style.transform = `rotate(-4deg) rotateY(${x * 18}deg) rotateX(${-y * 14}deg)`;
+      });
+      wrap.addEventListener('pointerleave', () => { ticket.style.transform = ''; });
+    }
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      let err = '';
+      if (!city.value.trim()) err = 'Add your city so we know where to come.';
+      else if (!emailOk(email.value.trim())) err = 'Enter an email like name@example.com.';
+      msg.classList.toggle('is-error', !!err);
+      msg.textContent = err || `Prototype: your request for ${city.value.trim()} is ready to send once the form is wired up. Nothing was sent.`;
+      if (!err) bump();
+    });
+    update();
+  }
+
+  // Tee designer: colour + prints, drag to turn, flip button.
+  function bindTee(main) {
+    const tee = $('[data-tee]', main);
+    if (!tee) return;
+    const form = $('#teeForm', main), side = $('[data-tee-side]', main), summary = $('[data-tee-summary]', main), msg = $('#teeMsg', main);
+    const label = (name) => { const r = $(`input[name="${name}"]:checked`, form); return r ? $(`label[for="${r.id}"]`, form).textContent.trim() : ''; };
+    let rot = 0, tilt = 0;
+    const render = (smooth = true) => {
+      tee.style.transition = smooth ? 'transform .9s cubic-bezier(.2,.7,.1,1)' : 'none';
+      tee.style.transform = `rotateX(${tilt}deg) rotateY(${rot}deg)`;
+      const back = Math.round(((rot % 360) + 360) % 360 / 180) % 2 === 1;
+      side.textContent = back ? 'Back' : 'Front';
+    };
+    const sync = () => {
+      tee.dataset.colour = ($('input[name="teeColour"]:checked', form) || {}).value || 'ink';
+      tee.dataset.front = ($('input[name="teeFront"]:checked', form) || {}).value || 'none';
+      tee.dataset.back = ($('input[name="teeBack"]:checked', form) || {}).value || 'none';
+      summary.textContent = `${label('teeColour')} tee · front: ${label('teeFront')} · back: ${label('teeBack')}`;
+      msg.textContent = '';
+    };
+    form.addEventListener('change', e => {
+      sync();
+      // show the side that just changed
+      if (e.target.name === 'teeBack' && Math.abs(Math.round(rot / 180)) % 2 === 0) { rot += 180; render(); }
+      if (e.target.name === 'teeFront' && Math.abs(Math.round(rot / 180)) % 2 === 1) { rot += 180; render(); }
+    });
+    $('[data-tee-flip]', main).addEventListener('click', () => { rot += 180; render(); });
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      msg.classList.remove('is-error');
+      msg.textContent = `Prototype: your vote for the ${summary.textContent.toLowerCase()} would be counted here. Nothing was sent.`;
+    });
+    // drag to spin, snap to a side on release
+    let drag = null;
+    tee.addEventListener('pointerdown', e => {
+      if (e.button !== 0) return;
+      drag = { x: e.clientX, rot }; tee.setPointerCapture(e.pointerId); tee.classList.add('is-dragging');
+    });
+    tee.addEventListener('pointermove', e => {
+      if (drag) { rot = drag.rot + (e.clientX - drag.x) * 0.6; render(false); return; }
+      if (finePointer && !reduced) {
+        const r = tee.getBoundingClientRect();
+        tilt = ((e.clientY - r.top) / r.height - 0.5) * -10;
+        tee.style.transition = 'transform .4s ease-out';
+        tee.style.transform = `rotateX(${tilt}deg) rotateY(${rot + ((e.clientX - r.left) / r.width - 0.5) * 16}deg)`;
+      }
+    });
+    const end = () => {
+      if (!drag) return;
+      const moved = Math.abs(rot - drag.rot) > 4;
+      drag = null; tee.classList.remove('is-dragging');
+      rot = moved ? Math.round(rot / 180) * 180 : rot + 180; // a tap turns it around
+      render();
+    };
+    tee.addEventListener('pointerup', end);
+    tee.addEventListener('pointercancel', end);
+    tee.addEventListener('pointerleave', () => { if (!drag) { tilt = 0; render(); } });
+    sync(); render(false);
+  }
+
+  // Mouse drag-to-scroll for sideways rows (touch already swipes natively).
+  // Returns a function that tells whether the last press was a drag, so clicks can be ignored.
+  function dragScroll(el, { skip = () => false, onDrag = () => {} } = {}) {
+    let down = null, dragged = false;
+    if (!finePointer) return () => false;
+    el.addEventListener('pointerdown', e => {
+      if (e.pointerType !== 'mouse' || e.button !== 0 || skip()) return;
+      down = { x: e.clientX, left: el.scrollLeft }; dragged = false;
+    });
+    const move = e => {
+      if (!down) return;
+      const dx = e.clientX - down.x;
+      if (Math.abs(dx) > 5 && !dragged) { dragged = true; el.classList.add('is-dragging'); onDrag(); }
+      if (dragged) el.scrollLeft = down.left - dx;
+    };
+    const up = () => { if (!down) return; down = null; setTimeout(() => el.classList.remove('is-dragging'), 0); };
+    addEventListener('pointermove', move); addEventListener('pointerup', up);
+    cleanups.push(() => { removeEventListener('pointermove', move); removeEventListener('pointerup', up); });
+    el.addEventListener('click', e => { if (dragged) { e.preventDefault(); e.stopPropagation(); dragged = false; } }, true);
+    return () => dragged;
+  }
+
+  // Moodboard strip: drag to scroll, loupe on hover, tap opens full size.
+  function bindStrip(main) {
+    const strip = $('[data-strip]', main);
+    if (!strip) return;
+    const looks = $$('.look', strip);
+    const isDragging = dragScroll(strip, { onDrag: () => looks.forEach(l => l.classList.remove('is-zoom')) });
+    looks.forEach((look, i) => {
+      const frame = $('.look__frame', look), lens = $('.look__lens', look), img = $('img', look);
+      if (finePointer && !reduced) {
+        look.addEventListener('pointermove', e => {
+          if (strip.classList.contains('is-dragging')) return;
+          const r = frame.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top, Z = 2.4;
+          if (x < 0 || y < 0 || x > r.width || y > r.height) { look.classList.remove('is-zoom'); return; }
+          look.classList.add('is-zoom');
+          lens.style.left = `${x - 75}px`; lens.style.top = `${y - 75}px`;
+          lens.style.backgroundImage = `url("${img.currentSrc || img.src}")`;
+          lens.style.backgroundSize = `${r.width * Z}px ${r.height * Z}px`;
+          lens.style.backgroundPosition = `${-(x * Z - 75)}px ${-(y * Z - 75)}px`;
+        });
+        look.addEventListener('pointerleave', () => look.classList.remove('is-zoom'));
+      }
+      look.addEventListener('click', () => { if (!isDragging()) openLightbox($$('.look img', strip), i); });
+    });
+  }
 
   // Photo trail: pictures drop where the pointer travels.
   function bindTrail(main) {
@@ -616,6 +903,7 @@
         return cards.map((_, i) => ({ x: x0 + (i % colsN) * (cw + gap), y: y0 + Math.floor(i / colsN) * stepY, r: 0 }));
       };
       const moveTo = (targets, stagger = 0.035) => targets.forEach((t, i) => {
+        st[i].vx = st[i].vy = 0; // stop any throw still in flight
         if (animate) gsap.to(st[i], { ...t, duration: 1, delay: i * stagger, ease: 'expo.out', overwrite: true, onUpdate: () => apply(i) });
         else { Object.assign(st[i], t); apply(i); }
       });
@@ -635,7 +923,7 @@
       const fling = i => {
         const c = st[i], card = cards[i];
         const step = () => {
-          if (card.classList.contains('is-dragging') || !card.isConnected) return;
+          if (card.classList.contains('is-dragging') || !card.isConnected || Math.hypot(c.vx, c.vy) <= 0.15) return;
           const { cw, ch } = size(i), W = pile.clientWidth, H = pile.clientHeight;
           c.x += c.vx; c.y += c.vy; c.vx *= 0.93; c.vy *= 0.93;
           c.r = clamp(c.r + c.vx * 0.25, -40, 40);
@@ -721,7 +1009,7 @@
   }
   function bindShows(main) {
     if (!finePointer || reduced) return;
-    $$('.show', main).forEach(s => {
+    $$('.show, .arc', main).forEach(s => {
       s.addEventListener('pointerenter', () => { peekImg.src = s.dataset.img; peek.classList.add('is-on'); });
       s.addEventListener('pointerleave', () => peek.classList.remove('is-on'));
     });
@@ -782,6 +1070,7 @@
     const track = $('#crateTrack', main), countOut = $('#musicCount', main), records = $$('.record', track);
     const total = String(records.length).padStart(2, '0');
     const setCount = i => { countOut.textContent = `${String(i + 1).padStart(2, '0')} / ${total}`; };
+    dragScroll(crate, { skip: () => crate.classList.contains('is-pinned') });
     crate.addEventListener('scroll', () => {
       if (crate.classList.contains('is-pinned')) return;
       const w = records[0].getBoundingClientRect().width + (parseFloat(getComputedStyle(track).columnGap) || 24);
@@ -839,8 +1128,9 @@
     const target = url.hash ? decodeURIComponent(url.hash.slice(1)) : '';
     try {
       const fetching = fetch(url.href, { credentials: 'same-origin' }).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); });
-      const slug = /artists\/([\w-]+)/.exec(url.pathname);
-      await coverIn(slug ? slug[1].replace(/-/g, ' ') : 'Throne');
+      const file = (url.pathname.split('/').pop() || '').replace(/\.html$/, '');
+      const labels = { shows: 'Shows', wear: 'Throne Wear', index: 'Throne', '': 'Throne' };
+      await coverIn(labels[file] !== undefined ? labels[file] : file.replace(/-/g, ' '));
       const doc = new DOMParser().parseFromString(await fetching, 'text/html');
       const nextMain = doc.querySelector('main');
       if (!nextMain) throw new Error('no main');
@@ -908,11 +1198,16 @@
   if ('IntersectionObserver' in window) {
     const links = $$('.nav__links a');
     const io = new IntersectionObserver(entries => entries.forEach(en => {
-      if (en.isIntersecting) links.forEach(l => l.classList.toggle('is-active', new URL(l.href).hash === `#${en.target.id}`));
+      if (en.isIntersecting) links.forEach(l => { const h = new URL(l.href).hash; if (h) l.classList.toggle('is-active', h === `#${en.target.id}`); });
     }), { rootMargin: '-45% 0px -50% 0px' });
     const watch = () => {
-      io.disconnect(); links.forEach(l => l.classList.remove('is-active'));
-      ['artists', 'music', 'shows', 'wear', 'contact'].forEach(id => { const s = document.getElementById(id); if (s) io.observe(s); });
+      io.disconnect();
+      links.forEach(l => {
+        const u = new URL(l.href), here = !u.hash && normPath(u) === normPath(location);
+        l.classList.toggle('is-active', here);
+        if (here) l.setAttribute('aria-current', 'page'); else l.removeAttribute('aria-current');
+      });
+      if (document.body.dataset.page === 'home') ['artists', 'music', 'contact'].forEach(id => { const s = document.getElementById(id); if (s) io.observe(s); });
     };
     addEventListener('throne:page', watch);
     watch();
