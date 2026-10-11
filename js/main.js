@@ -1,4 +1,7 @@
-/* Throne Records — prototype interactions */
+/* Throne Records — site interactions
+   Global layer (runs once): player, crown/dot visualizers, smooth scroll, nav, cursor, transitions.
+   Page layer (runs on every page swap): reveals, crate, roster, records, video, gallery, forms.
+   Internal links swap <main> in place, so the music never stops between pages. */
 (() => {
   'use strict';
 
@@ -7,46 +10,58 @@
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const finePointer = matchMedia('(hover: hover) and (pointer: fine)').matches;
   const hasGSAP = typeof window.gsap !== 'undefined' && typeof window.ScrollTrigger !== 'undefined';
+  const animate = hasGSAP && !reduced;
   const lerp = (a, b, t) => a + (b - a) * t;
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  if (hasGSAP) gsap.registerPlugin(ScrollTrigger);
+
+  // Site root as an absolute URL, so persistent parts keep working after the URL changes.
+  const ROOT = new URL(($('meta[name="site-root"]') || {}).content || './', location.href);
+  const asset = p => new URL(p, ROOT).href;
 
   const pointer = { x: -9999, y: -9999 };
   addEventListener('pointermove', e => { pointer.x = e.clientX; pointer.y = e.clientY; }, { passive: true });
 
   /* =====================================================================
-     DOT-MATRIX CROWN — the logo, rebuilt as an equalizer
+     DOT VISUALIZERS
      ===================================================================== */
   const COLS = 19, ROWS = 14, BAND = 2, GAP = 1;
   const PEAKS = [0, 4.5, 9, 13.5, 18];
-  // height of each spike column, above the band + gap
   const SPIKE = Array.from({ length: COLS }, (_, c) => {
     let m = 0;
     PEAKS.forEach(p => { m = Math.max(m, 1 - Math.abs(c - p) / 2.2); });
     return 1 + Math.round(9 * m) + (c === 9 ? 1 : 0);
   });
   const inCrown = (c, r) => r < BAND || (r >= BAND + GAP && r < BAND + GAP + SPIKE[c]);
-  // stable per-dot noise for the build-in
   const NOISE = Array.from({ length: COLS * ROWS }, (_, i) => (Math.sin(i * 91.17) * 43758.5453) % 1);
 
-  const levels = new Float32Array(COLS);   // 0..1 audio energy per column
+  const levels = new Float32Array(COLS); // 0..1 audio energy per column, bass in the centre
   let audioEnergy = 0;
 
-  class Crown {
-    constructor(canvas, { interactive = false, ghost = true } = {}) {
-      this.cv = canvas; this.ctx = canvas.getContext('2d');
-      this.interactive = interactive; this.ghost = ghost;
-      this.progress = 1; this.visible = true;
-      this.resize(); addEventListener('resize', () => this.resize());
+  class Canvas2D {
+    constructor(canvas) {
+      this.cv = canvas; this.ctx = canvas.getContext('2d'); this.visible = true; this.progress = 1;
+      this.onResize = () => this.resize(); addEventListener('resize', this.onResize); this.resize();
       if ('IntersectionObserver' in window) {
-        new IntersectionObserver(([e]) => { this.visible = e.isIntersecting; }).observe(canvas);
+        this.io = new IntersectionObserver(([e]) => { this.visible = e.isIntersecting; });
+        this.io.observe(canvas);
       }
     }
     resize() {
-      const r = this.cv.getBoundingClientRect();
-      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const r = this.cv.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 2);
       this.w = r.width; this.h = r.height;
       this.cv.width = Math.max(1, r.width * dpr); this.cv.height = Math.max(1, r.height * dpr);
       this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      this.layout();
+    }
+    layout() {}
+    destroy() { removeEventListener('resize', this.onResize); this.io && this.io.disconnect(); }
+  }
+
+  // The logo, rebuilt as an equalizer.
+  class Crown extends Canvas2D {
+    constructor(canvas, { interactive = false } = {}) { super(canvas); this.interactive = interactive; }
+    layout() {
       this.cell = Math.min(this.w / COLS, this.h / ROWS);
       this.ox = (this.w - this.cell * COLS) / 2; this.oy = (this.h - this.cell * ROWS) / 2;
     }
@@ -57,39 +72,25 @@
       const rect = this.interactive ? this.cv.getBoundingClientRect() : null;
       const px = rect ? pointer.x - rect.left : -9999, py = rect ? pointer.y - rect.top : -9999;
       const rad = cell * 0.36;
-
       for (let c = 0; c < COLS; c++) {
         const lvl = levels[c] * ROWS;
         for (let r = 0; r < ROWS; r++) {
           const i = c * ROWS + r;
-          const appear = (r / ROWS) * 0.8 + Math.abs(NOISE[i]) * 0.2;
-          if (appear > this.progress) continue;
-          let x = this.ox + c * cell + cell / 2;
-          let y = this.oy + (ROWS - 1 - r) * cell + cell / 2;
-
-          const crown = inCrown(c, r);
-          const hot = r < lvl;
+          if ((r / ROWS) * 0.8 + Math.abs(NOISE[i]) * 0.2 > this.progress) continue;
+          let x = this.ox + c * cell + cell / 2, y = this.oy + (ROWS - 1 - r) * cell + cell / 2;
+          const crown = inCrown(c, r), hot = r < lvl;
           let a, col, size = rad;
-
           if (crown) {
-            const shimmer = 0.78 + 0.22 * Math.sin(t * 0.0022 + c * 0.55 - r * 0.35);
-            a = shimmer; col = hot ? '#fff1c9' : '#e3ad48';
-            if (hot) size = rad * 1.12;
-          } else if (hot) {
-            a = 0.25 + 0.55 * (1 - r / ROWS); col = '#e3ad48'; size = rad * 0.8;
-          } else {
-            if (!this.ghost) continue;
-            a = 0.12; col = '#6b5a3a'; size = rad * 0.55;
-          }
-
+            a = 0.78 + 0.22 * Math.sin(t * 0.0022 + c * 0.55 - r * 0.35);
+            col = hot ? '#fff1c9' : '#e3ad48'; if (hot) size = rad * 1.12;
+          } else if (hot) { a = 0.25 + 0.55 * (1 - r / ROWS); col = '#e3ad48'; size = rad * 0.8; }
+          else { a = 0.12; col = '#6b5a3a'; size = rad * 0.55; }
           if (this.interactive) {
             const dx = x - px, dy = y - py, d = Math.hypot(dx, dy), R = cell * 4.2;
             if (d < R) {
               const f = 1 - d / R;
-              x += (dx / (d || 1)) * f * cell * 0.55;
-              y += (dy / (d || 1)) * f * cell * 0.55;
-              size *= 1 + f * 0.5; a = Math.min(1, a + f * 0.6);
-              if (!crown) col = '#e3ad48';
+              x += (dx / (d || 1)) * f * cell * 0.55; y += (dy / (d || 1)) * f * cell * 0.55;
+              size *= 1 + f * 0.5; a = Math.min(1, a + f * 0.6); if (!crown) col = '#e3ad48';
             }
           }
           ctx.globalAlpha = a; ctx.fillStyle = col;
@@ -100,35 +101,56 @@
     }
   }
 
-  const heroCrown = new Crown($('#heroCrown'), { interactive: finePointer && !reduced });
-  const loaderCrown = new Crown($('#loaderCrown'), { ghost: true });
-
-  /* =====================================================================
-     AUDIO — persistent player + analyser feeding the crown
-     ===================================================================== */
-  const TRACKS = [
-    { id: 'how-far', title: 'How Far', artist: 'Bros Throne', src: 'assets/audio/how_far.mp3', art: 'assets/img/featured_fet1_1.jpg' },
-    { id: 'jesu', title: 'Jesu', artist: 'Bros Throne', src: 'assets/audio/jesu.mp3', art: 'assets/img/featured_fet1_2.jpg' },
-  ];
-  const audio = $('#audio');
-  let current = null, actx = null, analyser = null, freq = null, audioGraphFailed = false;
-
-  function ensureGraph() {
-    if (actx || audioGraphFailed) return;
-    try {
-      const AC = window.AudioContext || window.webkitAudioContext;
-      actx = new AC();
-      const srcNode = actx.createMediaElementSource(audio);
-      analyser = actx.createAnalyser();
-      analyser.fftSize = 512; analyser.smoothingTimeConstant = 0.78;
-      srcNode.connect(analyser); analyser.connect(actx.destination);
-      freq = new Uint8Array(analyser.frequencyBinCount);
-    } catch (e) { audioGraphFailed = true; actx = null; analyser = null; }
+  // A wide dot equalizer for the artist hero; breathes when idle.
+  class DotStrip extends Canvas2D {
+    layout() { this.cell = 14; this.cols = Math.ceil(this.w / this.cell); this.rows = Math.max(3, Math.floor(this.h / this.cell)); }
+    draw(t) {
+      if (!this.visible || !this.w) return;
+      const { ctx, cell, cols, rows } = this;
+      ctx.clearRect(0, 0, this.w, this.h);
+      const playing = audioEnergy > 0.02;
+      for (let c = 0; c < cols; c++) {
+        const u = Math.abs(c / (cols - 1) - 0.5) * 2; // 0 centre → 1 edges
+        const li = clamp(9 + Math.round(u * 9) * (c / cols < 0.5 ? -1 : 1), 0, COLS - 1);
+        const idle = (0.18 + 0.14 * Math.sin(t * 0.0016 + c * 0.32)) * (1 - u * 0.6);
+        const lit = Math.max(idle, levels[li]) * rows;
+        for (let r = 0; r < rows; r++) {
+          const on = r < lit;
+          ctx.globalAlpha = on ? (playing ? 0.9 : 0.5) * (1 - (r / rows) * 0.5) : 0.08;
+          ctx.fillStyle = on ? '#e3ad48' : '#6b5a3a';
+          ctx.beginPath(); ctx.arc(c * cell + cell / 2, this.h - r * cell - cell / 2, cell * 0.22, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+      ctx.globalAlpha = 1;
+    }
   }
 
+  let visuals = []; // page-scoped visualizers
+  const loaderCanvas = $('#loaderCrown');
+  const loaderCrown = loaderCanvas ? new Crown(loaderCanvas) : { done: true, draw() {} };
+
+  /* =====================================================================
+     AUDIO — persistent player feeding the visualizers
+     ===================================================================== */
+  const TRACKS = [
+    { id: 'how-far', title: 'How Far', artist: 'Bros Throne', src: asset('assets/audio/how_far.mp3'), art: asset('assets/img/featured_fet1_1.jpg') },
+    { id: 'jesu', title: 'Jesu', artist: 'Bros Throne', src: asset('assets/audio/jesu.mp3'), art: asset('assets/img/featured_fet1_2.jpg') },
+  ];
+  const audio = $('#audio');
+  let current = null, actx = null, analyser = null, freq = null, graphFailed = false;
+
+  function ensureGraph() {
+    if (actx || graphFailed) return;
+    try {
+      actx = new (window.AudioContext || window.webkitAudioContext)();
+      const node = actx.createMediaElementSource(audio);
+      analyser = actx.createAnalyser(); analyser.fftSize = 512; analyser.smoothingTimeConstant = 0.78;
+      node.connect(analyser); analyser.connect(actx.destination);
+      freq = new Uint8Array(analyser.frequencyBinCount);
+    } catch (e) { graphFailed = true; actx = null; analyser = null; }
+  }
   function load(track) {
-    current = track;
-    audio.src = track.src;
+    current = track; audio.src = track.src;
     $('#playerTitle').textContent = track.title;
     $('#playerArtist').textContent = track.artist;
     $('#playerArt').src = track.art;
@@ -136,37 +158,39 @@
       try { navigator.mediaSession.metadata = new MediaMetadata({ title: track.title, artist: track.artist, album: 'Throne Records', artwork: [{ src: track.art, sizes: '600x600' }] }); } catch (e) {}
     }
   }
-
   function play(id) {
     const track = TRACKS.find(t => t.id === id) || TRACKS[0];
     if (!current || current.id !== track.id) load(track);
     else if (!audio.paused) { audio.pause(); return; }
     ensureGraph();
     if (actx && actx.state === 'suspended') actx.resume();
+    stopVideos();
     audio.play().catch(() => toast('Tap play again to start the track.'));
   }
-
+  function nextTrack() {
+    const i = current ? TRACKS.indexOf(current) : -1;
+    load(TRACKS[(i + 1) % TRACKS.length]); ensureGraph(); audio.play().catch(() => {}); syncUI();
+  }
   function syncUI() {
     const playing = !audio.paused && !audio.ended;
     document.body.classList.toggle('is-playing', playing);
     $('#playerIcon use').setAttribute('href', playing ? '#i-pause' : '#i-play');
     $('#playerToggle').setAttribute('aria-label', playing ? 'Pause' : 'Play');
-    $$('.record[data-play]').forEach(r => {
-      const on = current && r.dataset.play === current.id;
-      r.classList.toggle('is-current', !!on);
-      r.classList.toggle('is-spinning', !!on && playing);
-      const icon = $('.record__play use', r);
-      if (icon) icon.setAttribute('href', on && playing ? '#i-pause' : '#i-play');
+    $$('main [data-play]').forEach(el => {
+      const on = !!current && el.dataset.play === current.id;
+      const host = el.closest('.record, .ap-rec');
+      if (host) { host.classList.toggle('is-current', on); host.classList.toggle('is-spinning', on && playing); }
+      $$('use', el).forEach(u => {
+        if (/#i-(play|pause)$/.test(u.getAttribute('href'))) u.setAttribute('href', on && playing ? '#i-pause' : '#i-play');
+      });
     });
     $$('.now-chip').forEach(chip => {
-      const icon = $('.now-chip__btn use', chip);
       const on = current && chip.dataset.play === current.id && playing;
-      icon.setAttribute('href', on ? '#i-pause' : '#i-play');
       $('small', chip).textContent = on ? 'Now playing · the crown listens' : 'Press play · the crown listens';
     });
   }
   ['play', 'pause', 'ended'].forEach(ev => audio.addEventListener(ev, syncUI));
-  audio.addEventListener('ended', () => nextTrack(true));
+  audio.addEventListener('ended', nextTrack);
 
   const fmt = s => (isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` : '0:00');
   const seek = $('#playerSeek');
@@ -174,54 +198,35 @@
   audio.addEventListener('timeupdate', () => {
     if (seeking || !audio.duration) return;
     const p = audio.currentTime / audio.duration;
-    seek.value = Math.round(p * 1000);
-    seek.style.setProperty('--p', `${p * 100}%`);
+    seek.value = Math.round(p * 1000); seek.style.setProperty('--p', `${p * 100}%`);
     $('#playerCur').textContent = fmt(audio.currentTime);
   });
   audio.addEventListener('loadedmetadata', () => { $('#playerDur').textContent = fmt(audio.duration); });
   seek.addEventListener('input', () => { seeking = true; seek.style.setProperty('--p', `${seek.value / 10}%`); });
-  seek.addEventListener('change', () => {
-    if (audio.duration) audio.currentTime = (seek.value / 1000) * audio.duration;
-    seeking = false;
-  });
-
-  function nextTrack(autoplay) {
-    const i = current ? TRACKS.indexOf(current) : -1;
-    const n = TRACKS[(i + 1) % TRACKS.length];
-    load(n);
-    if (autoplay !== false) { ensureGraph(); audio.play().catch(() => {}); }
-    syncUI();
-  }
+  seek.addEventListener('change', () => { if (audio.duration) audio.currentTime = (seek.value / 1000) * audio.duration; seeking = false; });
   $('#playerToggle').addEventListener('click', () => play(current ? current.id : 'how-far'));
-  $('#playerNext').addEventListener('click', () => nextTrack(true));
+  $('#playerNext').addEventListener('click', nextTrack);
   document.addEventListener('click', e => {
     const el = e.target.closest('[data-play]');
     if (!el) return;
-    // inner sr-only button bubbles to the article; handle once
-    if (el.tagName === 'ARTICLE' && e.target.closest('button[data-play]')) return;
-    e.preventDefault();
-    play(el.dataset.play);
+    if (el.tagName !== 'BUTTON' && e.target.closest('button[data-play]')) return; // inner button handles it
+    e.preventDefault(); play(el.dataset.play);
   });
   load(TRACKS[0]);
-  syncUI();
 
-  // fold analyser bins into the 19 columns, mirrored so bass sits in the centre spike
   function readLevels(t) {
     const playing = !audio.paused;
     if (playing && analyser) {
       analyser.getByteFrequencyData(freq);
-      const half = Math.ceil(COLS / 2); // 10 bands
-      const maxBin = Math.floor(freq.length * 0.72);
+      const half = 10, maxBin = Math.floor(freq.length * 0.72);
       let sum = 0;
       for (let b = 0; b < half; b++) {
         const lo = Math.floor(Math.pow(b / half, 1.9) * maxBin);
         const hi = Math.max(lo + 1, Math.floor(Math.pow((b + 1) / half, 1.9) * maxBin));
         let v = 0; for (let k = lo; k < hi; k++) v = Math.max(v, freq[k]);
-        v = Math.pow(v / 255, 1.6) * (0.85 + b * 0.05);
-        sum += v;
-        const cL = 9 - b, cR = 9 + b;
-        levels[cL] = lerp(levels[cL], v, 0.5);
-        if (cR < COLS) levels[cR] = lerp(levels[cR], v, 0.5);
+        v = Math.pow(v / 255, 1.6) * (0.85 + b * 0.05); sum += v;
+        levels[9 - b] = lerp(levels[9 - b], v, 0.5);
+        if (9 + b < COLS) levels[9 + b] = lerp(levels[9 + b], v, 0.5);
       }
       audioEnergy = lerp(audioEnergy, sum / half, 0.2);
     } else if (playing) {
@@ -236,122 +241,52 @@
       audioEnergy = lerp(audioEnergy, 0, 0.05);
     }
   }
-
-  const hero = $('.hero');
   function frame(t) {
     readLevels(t);
-    heroCrown.draw(t);
+    visuals.forEach(v => v.draw(t));
     if (!loaderCrown.done) loaderCrown.draw(t);
-    hero.style.setProperty('--glow', (0.55 + audioEnergy * 0.9).toFixed(3));
+    document.documentElement.style.setProperty('--glow', (0.55 + audioEnergy * 0.9).toFixed(3));
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
 
   /* =====================================================================
-     LOADER + INTRO
-     ===================================================================== */
-  const loader = $('#loader');
-  const countEl = $('#loaderCount');
-  function intro() {
-    document.body.classList.remove('is-loading');
-    if (!hasGSAP || reduced) return;
-    const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
-    tl.from('.hero__letters span', { yPercent: 105, duration: 1.3, stagger: 0.06 })
-      .from(heroCrown, { progress: 0, duration: 1.6, ease: 'power2.out' }, 0)
-      .from('.hero__sub', { opacity: 0, letterSpacing: '0.2em', duration: 1.2 }, 0.4)
-      .from('.hero .reveal-up', { y: 30, opacity: 0, duration: 1, stagger: 0.1 }, 0.6)
-      .from('.nav', { yPercent: -100, duration: 1 }, 0.5)
-      .from('.player', { yPercent: 100, duration: 1 }, 0.8);
-  }
-  function finishLoader() {
-    loaderCrown.done = true;
-    loader.classList.add('is-done');
-    const anim = loader.animate(
-      [{ clipPath: 'inset(0 0 0 0)' }, { clipPath: 'inset(0 0 100% 0)' }],
-      { duration: reduced ? 1 : 900, easing: 'cubic-bezier(.7,0,.2,1)', fill: 'forwards' }
-    );
-    anim.onfinish = () => loader.remove();
-    intro();
-  }
-  if (reduced) {
-    loader.remove(); loaderCrown.done = true; document.body.classList.remove('is-loading');
-  } else {
-    const start = performance.now(), DUR = 1500;
-    let skipped = false;
-    loader.addEventListener('click', () => { skipped = true; });
-    const tick = now => {
-      const p = skipped ? 1 : clamp((now - start) / DUR, 0, 1);
-      const eased = 1 - Math.pow(1 - p, 3);
-      loaderCrown.progress = eased * 1.05;
-      countEl.textContent = String(Math.round(eased * 100)).padStart(3, '0');
-      if (p < 1) requestAnimationFrame(tick); else setTimeout(finishLoader, skipped ? 0 : 220);
-    };
-    requestAnimationFrame(tick);
-  }
-
-  /* =====================================================================
-     SMOOTH SCROLL
+     SMOOTH SCROLL, NAV, MENU
      ===================================================================== */
   let lenis = null;
   if (!reduced && typeof window.Lenis !== 'undefined') {
     lenis = new Lenis({ duration: 1.15, smoothWheel: true });
     if (hasGSAP) {
       lenis.on('scroll', ScrollTrigger.update);
-      gsap.ticker.add(time => lenis.raf(time * 1000));
-      gsap.ticker.lagSmoothing(0);
+      gsap.ticker.add(time => lenis.raf(time * 1000)); gsap.ticker.lagSmoothing(0);
     } else {
-      const raf = time => { lenis.raf(time); requestAnimationFrame(raf); };
-      requestAnimationFrame(raf);
+      const raf = time => { lenis.raf(time); requestAnimationFrame(raf); }; requestAnimationFrame(raf);
     }
   }
-  function scrollToTarget(target) {
-    const offset = -(parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nav-h')) || 72);
-    if (lenis) lenis.scrollTo(target, { offset: target === 0 ? 0 : offset, duration: 1.4 });
+  const navH = () => parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nav-h')) || 72;
+  function scrollToTarget(target, immediate) {
+    const offset = target === 0 ? 0 : -navH();
+    if (lenis) lenis.scrollTo(target, { offset, duration: 1.4, immediate: !!immediate, force: true });
     else {
       const y = target === 0 ? 0 : target.getBoundingClientRect().top + scrollY + offset;
-      scrollTo({ top: y, behavior: reduced ? 'auto' : 'smooth' });
+      scrollTo({ top: y, behavior: immediate || reduced ? 'auto' : 'smooth' });
     }
   }
-  document.addEventListener('click', e => {
-    const a = e.target.closest('a[href^="#"]');
-    if (!a) return;
-    const id = a.getAttribute('href').slice(1);
-    const target = id === 'top' || id === '' ? 0 : document.getElementById(id);
-    if (target === null) return;
-    e.preventDefault();
-    closeMenu();
-    scrollToTarget(target);
-  });
 
-  /* =====================================================================
-     NAV
-     ===================================================================== */
   const nav = $('#nav');
   let lastY = 0;
-  function onScroll() {
+  addEventListener('scroll', () => {
     const y = scrollY;
     nav.classList.toggle('is-scrolled', y > 40);
     nav.classList.toggle('is-hidden', y > 700 && y > lastY && !document.body.classList.contains('menu-open'));
     lastY = y;
-  }
-  addEventListener('scroll', onScroll, { passive: true }); onScroll();
-
-  const sectionLinks = $$('.nav__links a');
-  if ('IntersectionObserver' in window) {
-    const io = new IntersectionObserver(entries => {
-      entries.forEach(en => {
-        if (!en.isIntersecting) return;
-        sectionLinks.forEach(l => l.classList.toggle('is-active', l.getAttribute('href') === `#${en.target.id}`));
-      });
-    }, { rootMargin: '-45% 0px -50% 0px' });
-    ['artists', 'music', 'shows', 'wear', 'contact'].forEach(id => { const s = document.getElementById(id); if (s) io.observe(s); });
-  }
+  }, { passive: true });
 
   const burger = $('#burger'), menu = $('#menu');
   function openMenu() {
     menu.hidden = false; burger.setAttribute('aria-expanded', 'true'); document.body.classList.add('menu-open');
     lenis && lenis.stop();
-    if (hasGSAP && !reduced) {
+    if (animate) {
       gsap.fromTo(menu, { clipPath: 'inset(0 0 100% 0)' }, { clipPath: 'inset(0 0 0% 0)', duration: 0.7, ease: 'expo.inOut' });
       gsap.from('.menu__links a', { yPercent: 120, opacity: 0, duration: 0.8, stagger: 0.06, ease: 'expo.out', delay: 0.25 });
     }
@@ -360,22 +295,27 @@
     if (menu.hidden) return;
     burger.setAttribute('aria-expanded', 'false'); document.body.classList.remove('menu-open');
     lenis && lenis.start();
-    if (hasGSAP && !reduced) gsap.to(menu, { clipPath: 'inset(0 0 100% 0)', duration: 0.55, ease: 'expo.inOut', onComplete: () => { menu.hidden = true; } });
+    if (animate) gsap.to(menu, { clipPath: 'inset(0 0 100% 0)', duration: 0.55, ease: 'expo.inOut', onComplete: () => { menu.hidden = true; } });
     else menu.hidden = true;
   }
   burger.addEventListener('click', () => (menu.hidden ? openMenu() : closeMenu()));
-  addEventListener('keydown', e => { if (e.key === 'Escape') { closeMenu(); closeDrawer(); } });
 
   /* =====================================================================
-     CURSOR + MAGNETIC
+     CURSOR, MAGNETIC, FOLLOWERS
      ===================================================================== */
   const cursor = $('#cursor'), cursorLabel = $('#cursorLabel');
+  const float = $('#artistFloat'), floatImg = $('#artistFloatImg');
+  const peek = $('#showPeek'), peekImg = $('#showPeekImg');
   if (finePointer && !reduced) {
     document.body.classList.add('has-cursor');
-    const pos = { x: innerWidth / 2, y: innerHeight / 2 };
+    const c = { x: innerWidth / 2, y: innerHeight / 2 }, f = { ...c }, p = { ...c };
     const loop = () => {
-      pos.x = lerp(pos.x, pointer.x, 0.22); pos.y = lerp(pos.y, pointer.y, 0.22);
-      cursor.style.transform = `translate3d(${pos.x}px, ${pos.y}px, 0)`;
+      c.x = lerp(c.x, pointer.x, 0.22); c.y = lerp(c.y, pointer.y, 0.22);
+      cursor.style.transform = `translate3d(${c.x}px, ${c.y}px, 0)`;
+      f.x = lerp(f.x, pointer.x, 0.12); f.y = lerp(f.y, pointer.y, 0.12);
+      float.style.transform = `translate3d(${f.x - float.offsetWidth / 2}px, ${f.y - float.offsetHeight / 2}px, 0) rotate(${clamp((pointer.x - f.x) * 0.05, -8, 8)}deg)`;
+      p.x = lerp(p.x, pointer.x + 40, 0.16); p.y = lerp(p.y, pointer.y - 110, 0.16);
+      peek.style.left = `${p.x}px`; peek.style.top = `${p.y}px`;
       requestAnimationFrame(loop);
     };
     loop();
@@ -389,12 +329,14 @@
     });
     document.addEventListener('pointerleave', () => cursor.classList.remove('is-on'));
     document.addEventListener('pointerenter', () => cursor.classList.add('is-on'));
-
-    $$('[data-magnetic]').forEach(el => {
+  }
+  function bindMagnetic(scope) {
+    if (!finePointer || reduced) return;
+    $$('[data-magnetic]', scope).forEach(el => {
+      if (el.dataset.magBound) return; el.dataset.magBound = '1';
       el.addEventListener('pointermove', e => {
         const r = el.getBoundingClientRect();
-        const dx = (e.clientX - (r.left + r.width / 2)) * 0.28, dy = (e.clientY - (r.top + r.height / 2)) * 0.38;
-        el.style.transform = `translate(${dx}px, ${dy}px)`;
+        el.style.transform = `translate(${(e.clientX - (r.left + r.width / 2)) * 0.28}px, ${(e.clientY - (r.top + r.height / 2)) * 0.38}px)`;
       });
       el.addEventListener('pointerleave', () => {
         el.style.transition = 'transform .5s cubic-bezier(.2,.7,.1,1)'; el.style.transform = '';
@@ -402,246 +344,22 @@
       });
     });
   }
+  bindMagnetic(document);
 
-  /* =====================================================================
-     TEXT SPLITS + REVEALS
-     ===================================================================== */
-  function splitWords(el, inner = true) {
-    const words = el.textContent.trim().split(/\s+/);
-    el.setAttribute('aria-label', el.textContent.trim());
-    el.innerHTML = words.map(w => inner
-      ? `<span class="w" aria-hidden="true"><span class="wi">${w}</span></span>`
-      : `<span class="word" aria-hidden="true">${w}</span>`).join(' ');
-  }
-  $$('[data-split]').forEach(el => splitWords(el, true));
-
-  const scrubEl = $('[data-scrub]');
-  if (scrubEl) {
-    splitWords(scrubEl, false);
-    const gold = /^(believers|straight-shooters|storytellers\.?|redefine|define|change|world\.)$/i;
-    $$('.word', scrubEl).forEach(w => { if (gold.test(w.textContent.replace(/[,]/g, ''))) w.classList.add('is-gold'); });
-  }
-
-  if (hasGSAP && !reduced) {
-    gsap.registerPlugin(ScrollTrigger);
-
-    $$('[data-split]').forEach(el => {
-      gsap.from($$('.wi', el), {
-        yPercent: 110, duration: 1.1, ease: 'expo.out', stagger: 0.06,
-        scrollTrigger: { trigger: el, start: 'top 88%', once: true },
-      });
-    });
-
-    // manifesto: words light up as you read
-    if (scrubEl) {
-      document.documentElement.classList.add('js-scrub');
-      const words = $$('.word', scrubEl);
-      ScrollTrigger.create({
-        trigger: scrubEl, start: 'top 80%', end: 'bottom 45%', scrub: true,
-        onUpdate: self => {
-          const n = Math.round(self.progress * words.length);
-          words.forEach((w, i) => w.classList.toggle('is-lit', i < n));
-        },
-      });
-    }
-
-    gsap.from('.manifesto__facts > div', { y: 40, opacity: 0, duration: 1, stagger: 0.1, ease: 'expo.out', scrollTrigger: { trigger: '.manifesto__facts', start: 'top 90%', once: true } });
-    gsap.from('.artist-row', { y: 60, opacity: 0, duration: 1.1, stagger: 0.1, ease: 'expo.out', scrollTrigger: { trigger: '.artist-list', start: 'top 85%', once: true } });
-    gsap.from('.show', { y: 40, opacity: 0, duration: 1, stagger: 0.08, ease: 'expo.out', scrollTrigger: { trigger: '.show-list', start: 'top 88%', once: true } });
-    gsap.from('.tilt', { y: 80, opacity: 0, duration: 1.2, stagger: 0.15, ease: 'expo.out', scrollTrigger: { trigger: '.wear__cards', start: 'top 85%', once: true } });
-    gsap.from('.city', { y: 30, opacity: 0, duration: 1, stagger: 0.1, ease: 'expo.out', scrollTrigger: { trigger: '.cities', start: 'top 90%', once: true } });
-
-    // hero: wordmark spreads and crown lifts as you leave
-    gsap.to('.hero__word', {
-      scale: 0.9, yPercent: -12, opacity: 0.35, ease: 'none',
-      scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true },
-    });
-    gsap.to('.hero__crown', { yPercent: -30, scale: 0.9, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
-
-    // feature: cover drifts against the disc
-    gsap.fromTo('.feature__cover', { yPercent: 8 }, { yPercent: -8, ease: 'none', scrollTrigger: { trigger: '.feature', start: 'top bottom', end: 'bottom top', scrub: true } });
-    gsap.fromTo('.feature__disc', { xPercent: -30 }, { xPercent: 0, ease: 'power2.out', scrollTrigger: { trigger: '.feature', start: 'top 80%', end: 'center center', scrub: true } });
-
-    // footer wordmark rises in
-    gsap.from('.footer__word', { yPercent: 40, opacity: 0, ease: 'expo.out', duration: 1.4, scrollTrigger: { trigger: '.footer', start: 'top 85%', once: true } });
-  }
-
-  /* =====================================================================
-     MUSIC CRATE — pinned horizontal scroll on desktop, swipe on touch
-     ===================================================================== */
-  const crate = $('#crate'), track = $('#crateTrack'), countOut = $('#musicCount');
-  const records = $$('.record', track);
-  const total = String(records.length).padStart(2, '0');
-  const setCount = i => { countOut.textContent = `${String(i + 1).padStart(2, '0')} / ${total}`; };
-  if (hasGSAP && !reduced) {
-    ScrollTrigger.matchMedia({
-      '(min-width: 900px) and (hover: hover)': () => {
-        crate.classList.add('is-pinned');
-        const dist = () => Math.max(0, track.scrollWidth - innerWidth + 2 * parseFloat(getComputedStyle(crate).paddingLeft));
-        const tween = gsap.to(track, {
-          x: () => -dist(), ease: 'none',
-          scrollTrigger: {
-            trigger: '.music__pin', pin: true, start: 'top top', end: () => `+=${dist()}`, scrub: 0.6, invalidateOnRefresh: true,
-            onUpdate: self => setCount(Math.min(records.length - 1, Math.floor(self.progress * records.length))),
-          },
-        });
-        // records tilt slightly with scroll velocity
-        const skew = gsap.quickTo(track, 'skewX', { duration: 0.5, ease: 'power3' });
-        const st = tween.scrollTrigger;
-        const vLoop = () => { skew(clamp(st.getVelocity() / -400, -6, 6)); };
-        gsap.ticker.add(vLoop);
-        return () => { crate.classList.remove('is-pinned'); gsap.ticker.remove(vLoop); gsap.set(track, { x: 0, skewX: 0 }); };
-      },
-    });
-  }
-  crate.addEventListener('scroll', () => {
-    if (crate.classList.contains('is-pinned')) return;
-    const w = records[0].getBoundingClientRect().width + parseFloat(getComputedStyle(track).columnGap || 24);
-    setCount(clamp(Math.round(crate.scrollLeft / w), 0, records.length - 1));
-  }, { passive: true });
-
-  /* =====================================================================
-     ARTISTS — floating portrait + drawer
-     ===================================================================== */
-  const ARTISTS = {
-    bros: {
-      name: 'Bros Throne', role: 'Artist · Founder & CEO', img: 'assets/img/featured_fet1_1.jpg',
-      bio: 'Ogbe Japhet, known as Bros Throne, founded Throne Records in 2021 and still leads it from the front. His records move between Afrobeats and ghetto gospel, from the street-level bounce of How Far to the testimony of Jesu and Big God.',
-      facts: [['Real name', 'Ogbe Japhet'], ['From', 'Edo State, Nigeria'], ['Based', 'Russia'], ['Notable', 'Big God SZN (EP), Reckless ft. ODUMODUBLVCK, Neighborhood Hero ft. Zlatan Ibile']],
-      play: 'how-far',
-      links: [['Instagram', 'https://www.instagram.com/brosthrone'], ['YouTube', 'https://www.youtube.com/@BrosThrone']],
-    },
-    kidd: {
-      name: 'Kidd Carder', role: 'Artist · Songwriter', img: 'assets/img/featured_fet_kid1.jpg',
-      bio: 'Kidd Carder writes and performs for the Throne roster, bringing a songwriter’s ear to the label’s Afrobeats records.',
-      facts: [['Role', 'Artist & songwriter'], ['Label', 'Throne Records']],
-      links: [],
-    },
-    lilcase: {
-      name: 'Lilcase', role: 'Singer · Artist', img: 'assets/img/portfolio_lil_case.jpg',
-      bio: 'Lilcase is the voice on Big God, the lead single from Bros Throne’s Big God SZN, and one of the label’s core singers.',
-      facts: [['Stage name', 'Lilcase'], ['Featured on', 'Big God (Bros Throne ft. Lilcase)']],
-      links: [],
-    },
-  };
-
-  const float = $('#artistFloat'), floatImg = $('#artistFloatImg');
-  if (finePointer && !reduced) {
-    const fp = { x: innerWidth / 2, y: innerHeight / 2 };
-    let floatOn = false;
-    const fl = () => {
-      fp.x = lerp(fp.x, pointer.x, 0.12); fp.y = lerp(fp.y, pointer.y, 0.12);
-      const rot = clamp((pointer.x - fp.x) * 0.05, -8, 8);
-      float.style.transform = `translate3d(${fp.x - float.offsetWidth / 2}px, ${fp.y - float.offsetHeight / 2}px, 0) rotate(${rot}deg)`;
-      requestAnimationFrame(fl);
-    };
-    fl();
-    $$('.artist-row').forEach(row => {
-      row.addEventListener('pointerenter', () => {
-        floatImg.src = row.dataset.img; float.classList.add('is-on'); floatOn = true;
-      });
-      row.addEventListener('pointerleave', () => { float.classList.remove('is-on'); floatOn = false; });
-    });
-  }
-
-  const drawer = $('#drawer');
-  let lastFocus = null;
-  function openDrawer(key) {
-    const a = ARTISTS[key]; if (!a) return;
-    lastFocus = document.activeElement;
-    $('#drawerImg').src = a.img; $('#drawerImg').alt = a.name;
-    $('#drawerName').textContent = a.name;
-    $('#drawerRole').textContent = a.role;
-    $('#drawerBio').textContent = a.bio;
-    $('#drawerFacts').innerHTML = a.facts.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('');
-    const acts = [];
-    if (a.play) acts.push(`<button class="btn btn--gold" type="button" data-play="${a.play}">Play How Far</button>`);
-    a.links.forEach(([l, h]) => acts.push(`<a class="btn btn--ghost" href="${h}" target="_blank" rel="noopener">${l}</a>`));
-    $('#drawerActions').innerHTML = acts.join('');
-    drawer.hidden = false; float.classList.remove('is-on');
-    lenis && lenis.stop();
-    if (hasGSAP && !reduced) {
-      gsap.fromTo('.drawer__scrim', { opacity: 0 }, { opacity: 1, duration: 0.4 });
-      gsap.fromTo('.drawer__panel', { xPercent: 100 }, { xPercent: 0, duration: 0.8, ease: 'expo.out' });
-      gsap.fromTo('.drawer__img img', { scale: 1.25 }, { scale: 1, duration: 1.2, ease: 'expo.out' });
-      gsap.from('.drawer__body > *', { y: 24, opacity: 0, duration: 0.8, stagger: 0.05, ease: 'expo.out', delay: 0.2 });
-    }
-    $('.drawer__close').focus();
-  }
-  function closeDrawer() {
-    if (drawer.hidden) return;
-    const done = () => { drawer.hidden = true; lenis && lenis.start(); lastFocus && lastFocus.focus(); };
-    if (hasGSAP && !reduced) {
-      gsap.to('.drawer__panel', { xPercent: 100, duration: 0.5, ease: 'expo.in' });
-      gsap.to('.drawer__scrim', { opacity: 0, duration: 0.5, onComplete: done });
-    } else done();
-  }
-  $$('.artist-row').forEach(r => r.addEventListener('click', () => openDrawer(r.dataset.artist)));
-  drawer.addEventListener('click', e => { if (e.target.closest('[data-close]')) closeDrawer(); });
-
-  /* =====================================================================
-     SHOWS — image peeks beside the cursor
-     ===================================================================== */
-  const peek = $('#showPeek'), peekImg = $('#showPeekImg');
-  if (finePointer && !reduced) {
-    const pp = { x: 0, y: 0 };
-    const pl = () => {
-      pp.x = lerp(pp.x, pointer.x + 40, 0.16); pp.y = lerp(pp.y, pointer.y - 110, 0.16);
-      peek.style.left = `${pp.x}px`; peek.style.top = `${pp.y}px`;
-      requestAnimationFrame(pl);
-    };
-    pl();
-    $$('.show').forEach(s => {
-      s.addEventListener('pointerenter', () => { peekImg.src = s.dataset.img; peek.classList.add('is-on'); });
-      s.addEventListener('pointerleave', () => peek.classList.remove('is-on'));
-    });
-  }
-
-  /* =====================================================================
-     TILT CARDS
-     ===================================================================== */
-  if (finePointer && !reduced) {
-    $$('[data-tilt]').forEach(card => {
-      card.addEventListener('pointermove', e => {
-        const r = card.getBoundingClientRect();
-        const x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
-        card.style.transform = `rotateY(${(x - 0.5) * 14}deg) rotateX(${(0.5 - y) * 14}deg) translateZ(0)`;
-        card.style.setProperty('--mx', `${x * 100}%`); card.style.setProperty('--my', `${y * 100}%`);
-      });
-      card.addEventListener('pointerleave', () => { card.style.transform = ''; });
-    });
-  }
-
-  /* =====================================================================
-     FOOTER spotlight
-     ===================================================================== */
+  // footer spotlight (persistent)
   const fw = $('.footer__word');
-  fw.addEventListener('pointermove', e => {
-    const r = fw.getBoundingClientRect();
-    fw.style.setProperty('--fx', `${((e.clientX - r.left) / r.width) * 100}%`);
-    fw.style.setProperty('--fy', `${((e.clientY - r.top) / r.height) * 100}%`);
-  });
-  fw.addEventListener('pointerleave', () => { fw.style.setProperty('--fx', '-30%'); });
-  fw.style.setProperty('--fx', '-30%');
-
-  /* =====================================================================
-     CITY CLOCKS
-     ===================================================================== */
-  const clocks = $$('[data-tz]');
-  function tickClocks() {
-    const now = new Date();
-    clocks.forEach(el => {
-      try {
-        const parts = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: el.dataset.tz }).formatToParts(now);
-        const h = parts.find(p => p.type === 'hour').value, m = parts.find(p => p.type === 'minute').value;
-        el.innerHTML = `${h}<span class="colon">:</span>${m}`;
-      } catch (e) { el.textContent = '--:--'; }
+  if (fw) {
+    fw.style.setProperty('--fx', '-30%');
+    fw.addEventListener('pointermove', e => {
+      const r = fw.getBoundingClientRect();
+      fw.style.setProperty('--fx', `${((e.clientX - r.left) / r.width) * 100}%`);
+      fw.style.setProperty('--fy', `${((e.clientY - r.top) / r.height) * 100}%`);
     });
+    fw.addEventListener('pointerleave', () => fw.style.setProperty('--fx', '-30%'));
   }
-  tickClocks(); setInterval(tickClocks, 15000);
 
   /* =====================================================================
-     FORMS, COPY, TOAST
+     TOAST, COPY, LIGHTBOX, VIDEO
      ===================================================================== */
   const toastEl = $('#toast');
   let toastT;
@@ -649,27 +367,6 @@
     toastEl.textContent = msg; toastEl.classList.add('is-on');
     clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('is-on'), 2600);
   }
-  const emailOk = v => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
-
-  $('#dropForm').addEventListener('submit', e => {
-    e.preventDefault();
-    const v = $('#dropEmail').value.trim(), msg = $('#dropMsg');
-    msg.classList.toggle('is-error', !emailOk(v));
-    msg.textContent = emailOk(v) ? 'Prototype: this would add you to the drop list. Nothing was sent.' : 'Enter an email like name@example.com.';
-  });
-  $('#contactForm').addEventListener('submit', e => {
-    e.preventDefault();
-    const msg = $('#contactMsg');
-    const name = $('#cName').value.trim(), email = $('#cEmail').value.trim(), body = $('#cMsg').value.trim();
-    let err = '';
-    if (!name) err = 'Add your name so we know who to reply to.';
-    else if (!emailOk(email)) err = 'Enter an email like name@example.com.';
-    else if (body.length < 10) err = 'Tell us a little more in the message.';
-    msg.classList.toggle('is-error', !!err);
-    const topic = ($('input[name="topic"]:checked') || {}).value || 'Message';
-    msg.textContent = err || `Prototype: your ${topic.toLowerCase()} request is ready to send once the form is wired up. Nothing was sent.`;
-  });
-
   document.addEventListener('click', e => {
     const b = e.target.closest('[data-copy]');
     if (!b) return;
@@ -679,14 +376,406 @@
       const sel = getSelection(); sel.removeAllRanges(); sel.addRange(range);
       toast('Selected. Press copy on your keyboard.');
     };
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(() => toast(`Copied ${text}`), fallback);
-    } else fallback();
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => toast(`Copied ${text}`), fallback);
+    else fallback();
   });
 
-  // fonts and images change layout; keep ScrollTrigger measurements honest
+  const lightbox = $('#lightbox'), lbImg = $('#lightboxImg'), lbCount = $('#lightboxCount');
+  let lbItems = [], lbIndex = 0, lbReturn = null;
+  function showLightbox(i) {
+    lbIndex = (i + lbItems.length) % lbItems.length;
+    const img = lbItems[lbIndex];
+    lbImg.src = img.currentSrc || img.src; lbImg.alt = img.alt;
+    lbCount.textContent = `${String(lbIndex + 1).padStart(2, '0')} / ${String(lbItems.length).padStart(2, '0')}`;
+    if (animate) gsap.fromTo(lbImg, { opacity: 0, scale: 0.96 }, { opacity: 1, scale: 1, duration: 0.5, ease: 'expo.out' });
+  }
+  function openLightbox(items, i) {
+    lbItems = items; lbReturn = document.activeElement; lightbox.hidden = false; lenis && lenis.stop();
+    showLightbox(i); $('.lightbox__close').focus();
+  }
+  function closeLightbox() {
+    if (lightbox.hidden) return;
+    lightbox.hidden = true; lenis && lenis.start(); lbReturn && lbReturn.focus();
+  }
+  const stepLightbox = d => showLightbox(lbIndex + d);
+  lightbox.addEventListener('click', e => {
+    const act = e.target.closest('[data-lb]');
+    if (act) { if (act.dataset.lb === 'close') closeLightbox(); else stepLightbox(act.dataset.lb === 'next' ? 1 : -1); }
+    else if (e.target === lightbox) closeLightbox();
+  });
+  document.addEventListener('click', e => {
+    const shot = e.target.closest('[data-lightbox]');
+    if (!shot) return;
+    openLightbox($$('[data-lightbox] img', shot.parentElement), +shot.dataset.lightbox);
+  });
+  addEventListener('keydown', e => {
+    if (e.key === 'Escape') { closeMenu(); closeLightbox(); }
+    if (!lightbox.hidden && e.key === 'ArrowRight') stepLightbox(1);
+    if (!lightbox.hidden && e.key === 'ArrowLeft') stepLightbox(-1);
+  });
+
+  // click-to-load video, so YouTube only loads when asked
+  function stopVideos() {
+    $$('.ap-video__frame.is-playing').forEach(fr => {
+      fr.classList.remove('is-playing');
+      const ifr = $('iframe', fr); if (ifr) ifr.remove();
+      $('.ap-video__play', fr).hidden = false;
+    });
+  }
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('.ap-video__play');
+    if (!btn) return;
+    const fr = btn.closest('[data-video]');
+    audio.pause();
+    const ifr = document.createElement('iframe');
+    ifr.src = `https://www.youtube-nocookie.com/embed/${fr.dataset.video}?autoplay=1&rel=0`;
+    ifr.title = fr.dataset.videoTitle || 'Video';
+    ifr.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+    ifr.allowFullscreen = true;
+    fr.appendChild(ifr); fr.classList.add('is-playing'); btn.hidden = true;
+    if (!$('.ap-video__out', fr.parentElement)) {
+      const link = document.createElement('a');
+      link.href = `https://www.youtube.com/watch?v=${fr.dataset.video}`; link.target = '_blank'; link.rel = 'noopener';
+      link.className = 'ap-video__out'; link.textContent = 'Video not loading? Open it on YouTube ↗';
+      fr.after(link);
+    }
+  });
+
+  /* =====================================================================
+     PAGE LAYER
+     ===================================================================== */
+  let ctx = null;     // gsap context for the current page
+  let cleanups = [];  // other per-page teardown
+
+  function splitWords(el, inner) {
+    const text = el.textContent.trim();
+    el.setAttribute('aria-label', text);
+    el.innerHTML = text.split(/\s+/).map(w => inner
+      ? `<span class="w" aria-hidden="true"><span class="wi">${w}</span></span>`
+      : `<span class="word" aria-hidden="true">${w}</span>`).join(' ');
+  }
+
+  function initPage(main, { first } = {}) {
+    const page = main.dataset.page || 'home';
+    document.body.dataset.page = page;
+    $$('[data-split]', main).forEach(el => splitWords(el, true));
+    const scrubEl = $('[data-scrub]', main);
+    if (scrubEl) {
+      splitWords(scrubEl, false);
+      const gold = /^(believers|straight-shooters|storytellers\.?|redefine|define|change|world\.)$/i;
+      $$('.word', scrubEl).forEach(w => { if (gold.test(w.textContent.replace(/,/g, ''))) w.classList.add('is-gold'); });
+    }
+
+    const heroCanvas = $('#heroCrown', main);
+    if (heroCanvas) visuals.push(new Crown(heroCanvas, { interactive: finePointer && !reduced }));
+    $$('[data-dotstrip]', main).forEach(cv => visuals.push(new DotStrip(cv)));
+
+    bindMagnetic(main);
+    bindRoster(main); bindShows(main); bindTilt(main); bindForms(main); bindClocks(main); bindCrate(main);
+
+    if (animate) {
+      ctx = gsap.context(() => {
+        $$('[data-split]', main).forEach(el => {
+          gsap.from($$('.wi', el), { yPercent: 110, duration: 1.1, ease: 'expo.out', stagger: 0.06, scrollTrigger: { trigger: el, start: 'top 88%', once: true } });
+        });
+        if (scrubEl) {
+          document.documentElement.classList.add('js-scrub');
+          const words = $$('.word', scrubEl);
+          ScrollTrigger.create({
+            trigger: scrubEl, start: 'top 80%', end: 'bottom 45%', scrub: true,
+            onUpdate: self => { const n = Math.round(self.progress * words.length); words.forEach((w, i) => w.classList.toggle('is-lit', i < n)); },
+          });
+        }
+        const rise = (sel, trig, extra = {}) => {
+          const t = $(trig, main); if (!t) return;
+          gsap.from($$(sel, main), { y: 50, opacity: 0, duration: 1.1, stagger: 0.08, ease: 'expo.out', scrollTrigger: { trigger: t, start: 'top 88%', once: true }, ...extra });
+        };
+        if (page === 'home') {
+          rise('.manifesto__facts > div', '.manifesto__facts');
+          rise('.artist-row', '.artist-list');
+          rise('.show', '.show-list');
+          rise('.tilt', '.wear__cards', { y: 80 });
+          rise('.city', '.cities');
+          gsap.to('.hero__word', { scale: 0.9, yPercent: -12, opacity: 0.35, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
+          gsap.to('.hero__crown', { yPercent: -30, scale: 0.9, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
+          gsap.fromTo('.feature__cover', { yPercent: 8 }, { yPercent: -8, ease: 'none', scrollTrigger: { trigger: '.feature', start: 'top bottom', end: 'bottom top', scrub: true } });
+          gsap.fromTo('.feature__disc', { xPercent: -30 }, { xPercent: 0, ease: 'power2.out', scrollTrigger: { trigger: '.feature', start: 'top 80%', end: 'center center', scrub: true } });
+        } else {
+          rise('.ap-facts div', '.ap-facts');
+          rise('.ap-bio p', '.ap-bio');
+          rise('.ap-rec', '.ap-rec-list');
+          rise('.ap-shot', '.ap-shots', { y: 80 });
+          rise('.ap-links li', '.ap-links');
+          gsap.fromTo('.ap-hero__img img', { yPercent: 0 }, { yPercent: 10, ease: 'none', scrollTrigger: { trigger: '.ap-hero', start: 'top top', end: 'bottom top', scrub: true } });
+          gsap.fromTo('.ap-video__frame', { clipPath: 'inset(10% 6% 10% 6%)' }, { clipPath: 'inset(0% 0% 0% 0%)', ease: 'none', scrollTrigger: { trigger: '.ap-video', start: 'top 90%', end: 'top 35%', scrub: true } });
+        }
+      }, main);
+    }
+    syncUI();
+    dispatchEvent(new Event('throne:page'));
+    if (!first) introPage(main);
+  }
+
+  function teardownPage() {
+    if (ctx) { ctx.revert(); ctx = null; }
+    cleanups.forEach(fn => fn()); cleanups = [];
+    visuals.forEach(v => v.destroy()); visuals = [];
+    float.classList.remove('is-on'); peek.classList.remove('is-on');
+    stopVideos(); closeLightbox();
+  }
+
+  // entrance for the page's hero
+  function introPage(main) {
+    if (!animate) return;
+    const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
+    if (main.dataset.page === 'artist') {
+      tl.from($$('.ap-line > span', main), { yPercent: 110, duration: 1.2, stagger: 0.08 })
+        .from($('.ap-hero__img', main), { clipPath: 'inset(100% 0% 0% 0%)', duration: 1.3, ease: 'expo.inOut' }, 0)
+        .from($('.ap-hero__img img', main), { scale: 1.3, duration: 1.6 }, 0)
+        .from($$('.ap-back, .ap-hero .eyebrow, .ap-lede, .ap-actions', main), { y: 24, opacity: 0, duration: 1, stagger: 0.07 }, 0.3);
+    } else {
+      tl.from($$('.hero__letters span', main), { yPercent: 105, duration: 1.3, stagger: 0.06 })
+        .from($('.hero__sub', main), { opacity: 0, letterSpacing: '0.2em', duration: 1.2 }, 0.4)
+        .from($$('.hero .reveal-up', main), { y: 30, opacity: 0, duration: 1, stagger: 0.1 }, 0.6);
+      const crown = visuals.find(v => v instanceof Crown);
+      if (crown) tl.from(crown, { progress: 0, duration: 1.6, ease: 'power2.out' }, 0);
+    }
+  }
+
+  /* ---------- page binders ---------- */
+  function bindRoster(main) {
+    if (!finePointer || reduced) return;
+    $$('.artist-row', main).forEach(row => {
+      row.addEventListener('pointerenter', () => { floatImg.src = row.dataset.img; float.classList.add('is-on'); });
+      row.addEventListener('pointerleave', () => float.classList.remove('is-on'));
+    });
+  }
+  function bindShows(main) {
+    if (!finePointer || reduced) return;
+    $$('.show', main).forEach(s => {
+      s.addEventListener('pointerenter', () => { peekImg.src = s.dataset.img; peek.classList.add('is-on'); });
+      s.addEventListener('pointerleave', () => peek.classList.remove('is-on'));
+    });
+  }
+  function bindTilt(main) {
+    if (!finePointer || reduced) return;
+    $$('[data-tilt]', main).forEach(card => {
+      card.addEventListener('pointermove', e => {
+        const r = card.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+        card.style.transform = `rotateY(${(x - 0.5) * 14}deg) rotateX(${(0.5 - y) * 14}deg) translateZ(0)`;
+        card.style.setProperty('--mx', `${x * 100}%`); card.style.setProperty('--my', `${y * 100}%`);
+      });
+      card.addEventListener('pointerleave', () => { card.style.transform = ''; });
+    });
+  }
+  function bindClocks(main) {
+    const clocks = $$('[data-tz]', main);
+    if (!clocks.length) return;
+    const tick = () => {
+      const now = new Date();
+      clocks.forEach(el => {
+        try {
+          const parts = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: el.dataset.tz }).formatToParts(now);
+          el.innerHTML = `${parts.find(p => p.type === 'hour').value}<span class="colon">:</span>${parts.find(p => p.type === 'minute').value}`;
+        } catch (e) { el.textContent = '--:--'; }
+      });
+    };
+    tick();
+    const id = setInterval(tick, 15000);
+    cleanups.push(() => clearInterval(id));
+  }
+  const emailOk = v => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+  function bindForms(main) {
+    const drop = $('#dropForm', main);
+    if (drop) drop.addEventListener('submit', e => {
+      e.preventDefault();
+      const v = $('#dropEmail', main).value.trim(), msg = $('#dropMsg', main);
+      msg.classList.toggle('is-error', !emailOk(v));
+      msg.textContent = emailOk(v) ? 'Prototype: this would add you to the drop list. Nothing was sent.' : 'Enter an email like name@example.com.';
+    });
+    const contact = $('#contactForm', main);
+    if (contact) contact.addEventListener('submit', e => {
+      e.preventDefault();
+      const msg = $('#contactMsg', main);
+      const name = $('#cName', main).value.trim(), email = $('#cEmail', main).value.trim(), body = $('#cMsg', main).value.trim();
+      let err = '';
+      if (!name) err = 'Add your name so we know who to reply to.';
+      else if (!emailOk(email)) err = 'Enter an email like name@example.com.';
+      else if (body.length < 10) err = 'Tell us a little more in the message.';
+      msg.classList.toggle('is-error', !!err);
+      const topic = ($('input[name="topic"]:checked', main) || {}).value || 'Message';
+      msg.textContent = err || `Prototype: your ${topic.toLowerCase()} request is ready to send once the form is wired up. Nothing was sent.`;
+    });
+  }
+  function bindCrate(main) {
+    const crate = $('#crate', main);
+    if (!crate) return;
+    const track = $('#crateTrack', main), countOut = $('#musicCount', main), records = $$('.record', track);
+    const total = String(records.length).padStart(2, '0');
+    const setCount = i => { countOut.textContent = `${String(i + 1).padStart(2, '0')} / ${total}`; };
+    crate.addEventListener('scroll', () => {
+      if (crate.classList.contains('is-pinned')) return;
+      const w = records[0].getBoundingClientRect().width + (parseFloat(getComputedStyle(track).columnGap) || 24);
+      setCount(clamp(Math.round(crate.scrollLeft / w), 0, records.length - 1));
+    }, { passive: true });
+    if (!animate) return;
+    const mm = gsap.matchMedia();
+    mm.add('(min-width: 900px) and (hover: hover)', () => {
+      crate.classList.add('is-pinned');
+      const dist = () => Math.max(0, track.scrollWidth - innerWidth + 2 * parseFloat(getComputedStyle(crate).paddingLeft));
+      const tween = gsap.to(track, {
+        x: () => -dist(), ease: 'none',
+        scrollTrigger: {
+          trigger: $('.music__pin', main), pin: true, start: 'top top', end: () => `+=${dist()}`, scrub: 0.6, invalidateOnRefresh: true,
+          onUpdate: self => setCount(Math.min(records.length - 1, Math.floor(self.progress * records.length))),
+        },
+      });
+      const skew = gsap.quickTo(track, 'skewX', { duration: 0.5, ease: 'power3' });
+      const vLoop = () => skew(clamp(tween.scrollTrigger.getVelocity() / -400, -6, 6));
+      gsap.ticker.add(vLoop);
+      return () => { crate.classList.remove('is-pinned'); gsap.ticker.remove(vLoop); gsap.set(track, { clearProps: 'transform' }); };
+    });
+    cleanups.push(() => mm.revert());
+  }
+
+  /* =====================================================================
+     PAGE TRANSITIONS — swap <main>, keep everything else alive
+     ===================================================================== */
+  const curtain = $('#curtain'), curtainLabel = $('#curtainLabel');
+  const cols = curtain ? $$('.curtain__cols i', curtain) : [];
+  const normPath = u => u.pathname.replace(/index\.html$/, '');
+  let navigating = false;
+
+  async function coverIn(label) {
+    if (reduced || !cols.length) return;
+    curtain.classList.add('is-active');
+    curtainLabel.textContent = label || '';
+    curtainLabel.animate([{ opacity: 0, transform: 'translateY(24px)' }, { opacity: 1, transform: 'none' }], { duration: 420, delay: 360, fill: 'forwards', easing: 'cubic-bezier(.2,.7,.1,1)' });
+    await Promise.all(cols.map((c, i) => c.animate(
+      [{ transform: 'scaleY(0)', transformOrigin: 'bottom' }, { transform: 'scaleY(1)', transformOrigin: 'bottom' }],
+      { duration: 520, delay: i * 40, easing: 'cubic-bezier(.7,0,.2,1)', fill: 'forwards' }).finished));
+  }
+  async function coverOut() {
+    if (reduced || !cols.length) return;
+    curtainLabel.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200, fill: 'forwards' });
+    await Promise.all(cols.map((c, i) => c.animate(
+      [{ transform: 'scaleY(1)', transformOrigin: 'top' }, { transform: 'scaleY(0)', transformOrigin: 'top' }],
+      { duration: 620, delay: 120 + i * 40, easing: 'cubic-bezier(.7,0,.2,1)', fill: 'forwards' }).finished));
+    curtain.classList.remove('is-active');
+  }
+
+  async function navigate(url, { push = true } = {}) {
+    if (navigating) return;
+    navigating = true;
+    const target = url.hash ? decodeURIComponent(url.hash.slice(1)) : '';
+    try {
+      const fetching = fetch(url.href, { credentials: 'same-origin' }).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); });
+      const slug = /artists\/([\w-]+)/.exec(url.pathname);
+      await coverIn(slug ? slug[1].replace(/-/g, ' ') : 'Throne');
+      const doc = new DOMParser().parseFromString(await fetching, 'text/html');
+      const nextMain = doc.querySelector('main');
+      if (!nextMain) throw new Error('no main');
+      teardownPage();
+      if (push) history.pushState({}, '', url.href);
+      document.title = doc.title;
+      document.querySelector('main').replaceWith(document.adoptNode(nextMain));
+      closeMenu();
+      scrollToTarget(0, true);
+      initPage(nextMain);
+      if (hasGSAP) ScrollTrigger.refresh();
+      const el = target && document.getElementById(target);
+      if (el) { scrollToTarget(el, true); if (hasGSAP) ScrollTrigger.refresh(); }
+      nextMain.setAttribute('tabindex', '-1'); nextMain.focus({ preventScroll: true });
+      await coverOut();
+    } catch (err) {
+      location.href = url.href; // fall back to a normal page load
+    } finally {
+      navigating = false;
+    }
+  }
+
+  document.addEventListener('click', e => {
+    const a = e.target.closest('a[href]');
+    if (!a || e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    if (a.target === '_blank' || a.hasAttribute('download')) return;
+    if (a.getAttribute('href') === '#top') { e.preventDefault(); closeMenu(); scrollToTarget(0); return; }
+    const url = new URL(a.href, location.href);
+    if (url.origin !== location.origin) return;
+    if (normPath(url) === normPath(location)) {
+      e.preventDefault(); closeMenu();
+      const el = url.hash && document.getElementById(decodeURIComponent(url.hash.slice(1)));
+      scrollToTarget(el || 0);
+      return;
+    }
+    if (!/(\.html|\/)$/.test(url.pathname)) return;
+    e.preventDefault();
+    navigate(url);
+  });
+  addEventListener('popstate', () => navigate(new URL(location.href), { push: false }));
+
+  // Persistent chrome: pin relative links to absolute URLs so they survive URL changes.
+  $$('#nav a[href], #menu a[href], .footer a[href]').forEach(a => {
+    const raw = a.getAttribute('href');
+    if (raw && !raw.startsWith('#') && !/^[a-z]+:/i.test(raw)) a.setAttribute('href', new URL(raw, location.href).href);
+  });
+
+  // active section in the nav
+  if ('IntersectionObserver' in window) {
+    const links = $$('.nav__links a');
+    const io = new IntersectionObserver(entries => entries.forEach(en => {
+      if (en.isIntersecting) links.forEach(l => l.classList.toggle('is-active', new URL(l.href).hash === `#${en.target.id}`));
+    }), { rootMargin: '-45% 0px -50% 0px' });
+    const watch = () => {
+      io.disconnect(); links.forEach(l => l.classList.remove('is-active'));
+      ['artists', 'music', 'shows', 'wear', 'contact'].forEach(id => { const s = document.getElementById(id); if (s) io.observe(s); });
+    };
+    addEventListener('throne:page', watch);
+    watch();
+  }
+
+  /* =====================================================================
+     BOOT
+     ===================================================================== */
+  const firstMain = $('main');
+  initPage(firstMain, { first: true });
+
+  const loader = $('#loader');
+  function revealSite() {
+    document.body.classList.remove('is-loading');
+    if (animate) {
+      introPage(firstMain);
+      gsap.from('.nav', { yPercent: -100, duration: 1, ease: 'expo.out', delay: 0.5 });
+      gsap.from('.player', { yPercent: 100, duration: 1, ease: 'expo.out', delay: 0.8 });
+    }
+    if (location.hash) {
+      const el = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+      if (el) setTimeout(() => scrollToTarget(el, true), 60);
+    }
+  }
+  if (reduced || !loader) {
+    if (loader) loader.remove();
+    loaderCrown.done = true; revealSite();
+  } else {
+    const start = performance.now(), DUR = 1500, countEl = $('#loaderCount');
+    let skipped = false;
+    loader.addEventListener('click', () => { skipped = true; });
+    const tick = now => {
+      const p = skipped ? 1 : clamp((now - start) / DUR, 0, 1), eased = 1 - Math.pow(1 - p, 3);
+      loaderCrown.progress = eased * 1.05;
+      countEl.textContent = String(Math.round(eased * 100)).padStart(3, '0');
+      if (p < 1) { requestAnimationFrame(tick); return; }
+      setTimeout(() => {
+        loaderCrown.done = true; loader.classList.add('is-done');
+        const anim = loader.animate([{ clipPath: 'inset(0 0 0 0)' }, { clipPath: 'inset(0 0 100% 0)' }], { duration: 900, easing: 'cubic-bezier(.7,0,.2,1)', fill: 'forwards' });
+        anim.onfinish = () => loader.remove();
+        revealSite();
+      }, skipped ? 0 : 220);
+    };
+    requestAnimationFrame(tick);
+  }
+
   if (hasGSAP) {
     addEventListener('load', () => ScrollTrigger.refresh());
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { heroCrown.resize(); ScrollTrigger.refresh(); });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { visuals.forEach(v => v.resize()); ScrollTrigger.refresh(); });
   }
 })();

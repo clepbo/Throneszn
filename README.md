@@ -5,7 +5,9 @@ through any static server (for example `python3 -m http.server`) — audio needs
 to be served over http, not opened from `file://`.
 
 ```
-index.html        page markup
+index.html        homepage
+artists/*.html    artist pages (generated, see below)
+scripts/build_artists.py  artist page generator + artist content
 css/style.css     all styles (tokens at the top)
 js/main.js        interactions
 assets/img        client images pulled from the current site
@@ -14,6 +16,38 @@ assets/audio      How Far + Jesu (from the current site)
 
 Libraries (CDN): GSAP 3.12.5 + ScrollTrigger, Lenis 1.1.13. Fonts: Big Shoulders
 Display, Hanken Grotesk, Martian Mono (Google Fonts).
+
+## Live site
+
+Hosted on GitHub Pages from the `gh-pages` branch:
+**https://clepbo.github.io/Throneszn/**
+
+`.github/workflows/pages.yml` rebuilds the artist pages and republishes `gh-pages` on
+every push to the default branch. If the site ever shows a 404, check
+*Settings → Pages* is set to *Deploy from a branch → gh-pages / (root)*.
+
+## Artist pages
+
+`artists/bros-throne.html`, `artists/kidd-carder.html`, `artists/lilcase.html` are
+generated from `index.html` (header, menu, player, footer are copied verbatim) plus the
+`ARTISTS` data in `scripts/build_artists.py`. To change a bio, add a record or a new
+artist, edit that data and run:
+
+```
+python3 scripts/build_artists.py
+```
+
+Each page has: a hero with a dot equalizer that reacts to the player, facts + bio,
+a records list (play on-site where we have audio, otherwise YouTube), a click-to-load
+video (YouTube only loads when pressed), a photo grid with a full-screen viewer, socials,
+and a "next artist" link.
+
+## Music that keeps playing
+
+Internal links don't reload the page. `js/main.js` fetches the next page, swaps only
+`<main>` behind a gold curtain, and leaves the header, player and footer alone, so a
+track keeps playing while you browse. Back/forward work, deep links (`/#music`) work,
+and if anything fails it falls back to a normal page load.
 
 ## What we found on the current site
 
@@ -38,7 +72,7 @@ out to lnk.to, slide-up reveals, a "fly" hover lift, minimal footer.
 | Hero | The crown is a live **audio visualizer**: press play and its columns react to the track's frequencies (bass in the centre spike). Dots also push away from the cursor. |
 | Persistent player | Music plays on-site in a bottom bar that survives scrolling (play/pause, seek, next, Media Session metadata). Mavin always sends you off-site. |
 | Manifesto | Words light up as you scroll through them; key words turn gold. |
-| Roster | Giant names; hover fills the row gold, rolls the name, and a portrait follows the cursor. Click opens an artist drawer with bio + facts. Mobile shows inline thumbnails. |
+| Roster | Giant names; hover fills the row gold, rolls the name, and a portrait follows the cursor. Click opens the artist's page. Mobile shows inline thumbnails. |
 | New music | A pinned horizontal "crate" on desktop (scroll moves records sideways, skewing with velocity); swipe on touch. Hover slides the vinyl out of the sleeve; the playing record spins. |
 | Featured | Big God SZN with a spinning disc that parallaxes out from behind the cover. |
 | Shows | Rows sweep in a surface on hover with an image peeking beside the cursor. |
@@ -55,7 +89,7 @@ plain, fully readable page if the libraries fail to load.
 
 - Audio only exists for **How Far** and **Jesu**; other records link to YouTube. We need masters/previews (or Spotify/Apple links) for the rest.
 - Cover art is missing for Neighborhood Hero, Blessed, Lonely and G63 — they use typographic placeholder sleeves.
-- Higher-res artist photography and a bio for Kidd Carder and Lilcase.
+- Higher-res artist photography, full bios for Kidd Carder and Lilcase, and Lilcase's socials.
 - Confirm the management email (`thronerecordsmanagement@gmail.com` is our reading of the current site) and which phone numbers to publish.
 - 2026 show dates, and whether Throne Wear has a store yet (forms currently do not submit).
 - Vector logo files.

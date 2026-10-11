@@ -1,0 +1,33 @@
+# Publishes the site to the gh-pages branch, which GitHub Pages serves.
+# Runs on every push to the default branch, or manually from the Actions tab.
+name: Publish site
+
+on:
+  push:
+    branches: ["claude/peaceful-ptolemy-0bszyj", "main"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Rebuild artist pages
+        run: python3 scripts/build_artists.py
+      - name: Push to gh-pages
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B gh-pages
+          git add -A
+          git commit -m "Publish site from ${GITHUB_SHA::7}" --allow-empty
+          git push --force origin gh-pages

@@ -9,8 +9,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;900&family=Hanken+Grotesk:wght@400;500;600&family=Martian+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="css/style.css">
+<meta name="site-root" content="./">
 </head>
-<body class="is-loading">
+<body class="is-loading" data-page="home">
 
 <!-- ============ LOADER ============ -->
 <div class="loader" id="loader" aria-hidden="true">
@@ -24,19 +25,35 @@
 <!-- ============ CURSOR ============ -->
 <div class="cursor" id="cursor" aria-hidden="true"><span class="cursor__label" id="cursorLabel"></span></div>
 <div class="artist-float" id="artistFloat" aria-hidden="true"><img alt="" id="artistFloatImg"></div>
+<div class="show-peek" id="showPeek" aria-hidden="true"><img alt="" id="showPeekImg"></div>
+
+<!-- ============ PAGE TRANSITION ============ -->
+<div class="curtain" id="curtain" aria-hidden="true">
+  <div class="curtain__cols"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <p class="curtain__label" id="curtainLabel"></p>
+</div>
+
+<!-- ============ LIGHTBOX ============ -->
+<div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="Photo viewer">
+  <img class="lightbox__img" id="lightboxImg" alt="">
+  <p class="lightbox__count" id="lightboxCount"></p>
+  <button class="lightbox__btn lightbox__close" type="button" data-lb="close">Close</button>
+  <button class="lightbox__btn lightbox__prev" type="button" data-lb="prev" aria-label="Previous photo">←</button>
+  <button class="lightbox__btn lightbox__next" type="button" data-lb="next" aria-label="Next photo">→</button>
+</div>
 
 <!-- ============ HEADER ============ -->
 <header class="nav" id="nav">
-  <a class="nav__brand" href="#top" aria-label="Throne Records home">
+  <a class="nav__brand" href="./" aria-label="Throne Records home">
     <svg class="nav__crown" viewBox="0 0 38 22" aria-hidden="true"><use href="#crownMark"/></svg>
     <span>Throne</span>
   </a>
   <nav class="nav__links" aria-label="Primary">
-    <a href="#artists" data-magnetic>Artists</a>
-    <a href="#music" data-magnetic>Music</a>
-    <a href="#shows" data-magnetic>Shows</a>
-    <a href="#wear" data-magnetic>Wear</a>
-    <a href="#contact" data-magnetic>Contact</a>
+    <a href="./#artists" data-magnetic>Artists</a>
+    <a href="./#music" data-magnetic>Music</a>
+    <a href="./#shows" data-magnetic>Shows</a>
+    <a href="./#wear" data-magnetic>Wear</a>
+    <a href="./#contact" data-magnetic>Contact</a>
   </nav>
   <button class="nav__listen" type="button" data-play="how-far" data-cursor="Play" data-magnetic>
     <span class="eq-mini" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
@@ -49,11 +66,11 @@
 
 <div class="menu" id="menu" hidden>
   <nav class="menu__links" aria-label="Mobile">
-    <a href="#artists"><small>01</small>Artists</a>
-    <a href="#music"><small>02</small>Music</a>
-    <a href="#shows"><small>03</small>Shows</a>
-    <a href="#wear"><small>04</small>Wear</a>
-    <a href="#contact"><small>05</small>Contact</a>
+    <a href="./#artists"><small>01</small>Artists</a>
+    <a href="./#music"><small>02</small>Music</a>
+    <a href="./#shows"><small>03</small>Shows</a>
+    <a href="./#wear"><small>04</small>Wear</a>
+    <a href="./#contact"><small>05</small>Contact</a>
   </nav>
   <p class="menu__foot">Lagos · Moscow · London</p>
 </div>
@@ -125,52 +142,37 @@
   <section class="artists" id="artists">
     <div class="section-head">
       <h2 class="section-title" data-split>The roster</h2>
-      <p class="section-note">Three voices, one crown. Hover a name.</p>
+      <p class="section-note">Three voices, one crown. Pick a name.</p>
     </div>
 
     <ul class="artist-list">
       <li>
-        <button class="artist-row" type="button" data-artist="bros" data-img="assets/img/portfolio_bros_throne.jpg" data-cursor="View">
+        <a class="artist-row" href="artists/bros-throne.html" data-img="assets/img/portfolio_bros_throne.jpg" data-cursor="View">
           <span class="artist-row__idx">A/01</span>
           <span class="artist-row__name"><span class="roll" data-text="Bros Throne">Bros Throne</span></span>
           <span class="artist-row__role">Artist · Founder &amp; CEO</span>
           <img class="artist-row__thumb" src="assets/img/portfolio_bros_throne.jpg" alt="Bros Throne">
-        </button>
+        </a>
       </li>
       <li>
-        <button class="artist-row" type="button" data-artist="kidd" data-img="assets/img/portfolio_kid22.jpg" data-cursor="View">
+        <a class="artist-row" href="artists/kidd-carder.html" data-img="assets/img/portfolio_kid22.jpg" data-cursor="View">
           <span class="artist-row__idx">A/02</span>
           <span class="artist-row__name"><span class="roll" data-text="Kidd Carder">Kidd Carder</span></span>
           <span class="artist-row__role">Artist · Songwriter</span>
           <img class="artist-row__thumb" src="assets/img/portfolio_kid22.jpg" alt="Kidd Carder">
-        </button>
+        </a>
       </li>
       <li>
-        <button class="artist-row" type="button" data-artist="lilcase" data-img="assets/img/portfolio_lil_case.jpg" data-cursor="View">
+        <a class="artist-row" href="artists/lilcase.html" data-img="assets/img/portfolio_lil_case.jpg" data-cursor="View">
           <span class="artist-row__idx">A/03</span>
           <span class="artist-row__name"><span class="roll" data-text="Lilcase">Lilcase</span></span>
           <span class="artist-row__role">Singer · Artist</span>
           <img class="artist-row__thumb" src="assets/img/portfolio_lil_case.jpg" alt="Lilcase">
-        </button>
+        </a>
       </li>
     </ul>
   </section>
 
-  <!-- Artist drawer -->
-  <div class="drawer" id="drawer" hidden>
-    <div class="drawer__scrim" data-close></div>
-    <article class="drawer__panel" role="dialog" aria-modal="true" aria-labelledby="drawerName">
-      <button class="drawer__close" type="button" data-close aria-label="Close">Close</button>
-      <div class="drawer__img"><img id="drawerImg" alt=""></div>
-      <div class="drawer__body">
-        <p class="eyebrow" id="drawerRole"></p>
-        <h3 class="drawer__name" id="drawerName"></h3>
-        <p class="drawer__bio" id="drawerBio"></p>
-        <dl class="drawer__facts" id="drawerFacts"></dl>
-        <div class="drawer__actions" id="drawerActions"></div>
-      </div>
-    </article>
-  </div>
 
   <!-- ============ MUSIC ============ -->
   <section class="music" id="music">
@@ -333,7 +335,6 @@
         <span class="show__tag">Released</span>
       </li>
     </ol>
-    <div class="show-peek" id="showPeek" aria-hidden="true"><img alt="" id="showPeekImg"></div>
   </section>
 
   <!-- ============ WEAR ============ -->
@@ -351,11 +352,11 @@
     </div>
     <div class="wear__cards">
       <figure class="tilt" data-tilt>
-        <img src="assets/img/cloths_product1.jpg" alt="Lilcase in Throne Wear, lounge set">
+        <img src="assets/img/cloths_product1.jpg" alt="Throne Wear, look 01">
         <figcaption><span>Look 01</span><span>Coming soon</span></figcaption>
       </figure>
       <figure class="tilt" data-tilt>
-        <img src="assets/img/cloths_product2.jpg" alt="Bros Throne on stage in Throne Wear">
+        <img src="assets/img/cloths_product2.jpg" alt="Bros Throne on stage, Throne Wear look 02">
         <figcaption><span>Look 02</span><span>Coming soon</span></figcaption>
       </figure>
     </div>
