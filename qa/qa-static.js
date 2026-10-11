@@ -2,7 +2,7 @@
 const { chromium } = require('playwright');
 const V = process.env.VENDOR_DIR; // optional: serve CDN scripts from a local folder (offline/sandboxed runs)
 const BASE = process.env.BASE_URL || 'http://localhost:8765/';
-const PAGES=(process.env.PAGES ? process.env.PAGES.split(',') : ['', 'artists/bros-throne.html', 'artists/kidd-carder.html', 'artists/lilcase.html', 'shows.html', 'wear.html']).map(x => x === 'home' ? '' : x);
+const PAGES=(process.env.PAGES ? process.env.PAGES.split(',') : ['', 'artists/bros-throne.html', 'artists/kidd-carder.html', 'artists/lilcase.html', 'shows.html', 'wear.html', 'contact.html']).map(x => x === 'home' ? '' : x);
 const WIDTHS=[[360,740],[390,844],[768,1024],[1024,768],[1440,900],[1920,1080]];
 const fontCache={};
 async function setup(ctx){
@@ -37,7 +37,7 @@ async function setup(ctx){
     const res = await p.evaluate((W) => {
       const out = {};
       out.scrollW = document.documentElement.scrollWidth;
-      const wide = [...document.querySelectorAll('main *, footer *, header *')].filter(el => { const rc = el.getBoundingClientRect(); const cs=getComputedStyle(el); return rc.right > W + 1 && rc.width > 0 && cs.position!=='fixed' && !el.closest('.crate,.mood__strip,.ticker,.footer__word,.zoom,.trail,.pile,.hero,.ap-next'); }).slice(0,5).map(el => el.tagName+'.'+el.className.toString().slice(0,40)+' r='+Math.round(el.getBoundingClientRect().right));
+      const wide = [...document.querySelectorAll('main *, footer *, header *')].filter(el => { const rc = el.getBoundingClientRect(); const cs=getComputedStyle(el); return rc.right > W + 1 && rc.width > 0 && cs.position!=='fixed' && !el.closest('.crate,.mood__strip,.desk-tabs,.ticker,.footer__word,.zoom,.trail,.pile,.hero,.ap-next'); }).slice(0,5).map(el => el.tagName+'.'+el.className.toString().slice(0,40)+' r='+Math.round(el.getBoundingClientRect().right));
       out.wide = wide;
       const ids = [...document.querySelectorAll('[id]')].map(e=>e.id); out.dupIds = ids.filter((x,i)=>ids.indexOf(x)!==i);
       out.badImgs = [...document.querySelectorAll('img')].filter(i => i.getAttribute('src') && i.complete && i.naturalWidth===0).map(i=>i.getAttribute('src'));

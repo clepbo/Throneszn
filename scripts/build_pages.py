@@ -7,6 +7,7 @@ shares identical chrome; only <main> differs. Builds:
     artists/<slug>.html   one per entry in ARTISTS
     shows.html            map, archive (SHOWS) and city requests
     wear.html             Throne Wear: tee designer, moodboard (LOOKS), sign-up
+    contact.html          desks (DESKS), live letter, bases, follow the roster
 
 Edit the data below (or index.html's chrome), then run:
 
@@ -194,7 +195,7 @@ def build_main(a, nxt):
       <p class="ap-lede">{E(a["lede"])}</p>
       <div class="ap-actions">
         {cta}
-        <a class="btn btn--ghost" href="../#contact" data-magnetic>Book {E(a["name"][0])}</a>
+        <a class="btn btn--ghost" href="../contact.html?desk=booking&amp;artist={a["slug"]}" data-magnetic>Book {E(a["name"][0])}</a>
       </div>
     </div>
     <figure class="ap-hero__img">
@@ -352,7 +353,7 @@ def build_shows_main():
       <p class="pg-lede">Three home bases, one sound. The 2026 dates are being booked now. Until they land, here is where Throne has been. Tap a city on the map.</p>
       <div class="ap-actions">
         <a class="btn btn--gold" href="#request" data-magnetic>Bring Throne to your city</a>
-        <a class="btn btn--ghost" href="./#contact" data-magnetic>Book an artist</a>
+        <a class="btn btn--ghost" href="contact.html?desk=booking" data-magnetic>Book an artist</a>
       </div>
     </div>
     <div class="map" data-map data-mask="{mask}">
@@ -551,6 +552,149 @@ def build_wear_main():
 </main>"""
 
 
+# ---------------------------------------------------------------------------
+# Contact
+# ---------------------------------------------------------------------------
+
+# desk key, label, short description, where it goes
+DESKS = [
+    ("booking", "Booking", "Shows, features, appearances", "thronerecordsmanagement@gmail.com"),
+    ("demo", "Demo", "Send us your music", "info@throneszn.com"),
+    ("press", "Press", "Interviews and features", "info@throneszn.com"),
+    ("wear", "Throne Wear", "Orders and collaborations", "info@throneszn.com"),
+    ("other", "Something else", "Anything we missed", "info@throneszn.com"),
+]
+
+LINES = [
+    ("Email", "info@throneszn.com"),
+    ("Management", "thronerecordsmanagement@gmail.com"),
+    ("Phone · UK", "077 7662 2184"),
+    ("Phone · NG", "+234 803 311 2018"),
+]
+
+
+def build_contact_main():
+    lines = "\n".join(
+        f'        <li><span>{E(k)}</span><button class="copy" type="button" data-copy="{E(v)}">{E(v)}</button></li>'
+        for k, v in LINES)
+    tabs = "\n".join(
+        f'        <button class="desk-tab" type="button" role="tab" id="tab-{k}" aria-controls="deskForm" aria-selected="{"true" if i == 0 else "false"}" data-desk="{k}" data-to="{E(to)}">'
+        f'<span class="desk-tab__k">{i + 1:02d}</span><span class="desk-tab__l">{E(l)}</span><small>{E(d)}</small></button>'
+        for i, (k, l, d, to) in enumerate(DESKS))
+    artists = "\n".join(
+        f'            <input type="checkbox" name="dkArtist" id="dk-{a["slug"]}" value="{E(" ".join(a["name"]))}"><label for="dk-{a["slug"]}">{E(" ".join(a["name"]))}</label>'
+        for a in ARTISTS)
+    follow = []
+    for a in ARTISTS:
+        if not a["links"]:
+            continue
+        links = " ".join(f'<a href="{E(h)}" target="_blank" rel="noopener" data-magnetic>{E(l)}</a>' for l, h in a["links"])
+        follow.append(f'      <li class="follow-row" data-img="assets/img/{a["portrait"]}"><a class="follow-row__name" href="artists/{a["slug"]}.html" data-cursor="View">{E(" ".join(a["name"]))}</a><span class="follow-row__links">{links}</span></li>')
+    return f"""<main id="top" data-page="contact">
+
+  <section class="pg-hero pg-hero--contact" data-tone="dark">
+    <div class="pg-hero__text">
+      <p class="eyebrow">Contact</p>
+      <h1 class="pg-title" aria-label="Pull up a chair."><span class="ap-line"><span>Pull up</span></span><span class="ap-line"><span>a chair.</span></span></h1>
+      <p class="pg-lede">Bookings, features, press, a demo you believe in, or a question about Throne Wear. Pick a desk and tell us what you have got.</p>
+      <div class="ap-actions"><a class="btn btn--gold" href="#write" data-magnetic>Write to a desk</a></div>
+    </div>
+    <div class="direct">
+      <p class="eyebrow">Direct lines · tap to copy</p>
+      <ul class="contact__lines">
+{lines}
+        <li><span>Post</span><span>24 Hartill Street, WV13 2JG, United Kingdom</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="desk" id="write" data-tone="light">
+    <div class="section-head">
+      <h2 class="section-title" data-split>Pick a desk</h2>
+      <p class="section-note">The form changes with the desk, and your letter writes itself as you type.</p>
+    </div>
+    <div class="desk-tabs" role="tablist" aria-label="Who is this for?">
+{tabs}
+    </div>
+    <div class="desk__grid">
+      <form class="desk__form" id="deskForm" role="tabpanel" aria-labelledby="tab-booking" novalidate>
+        <div class="field"><input id="dkName" type="text" placeholder=" " autocomplete="name" required><label for="dkName">Your name</label></div>
+        <div class="field"><input id="dkEmail" type="email" placeholder=" " autocomplete="email" required><label for="dkEmail">Email</label></div>
+
+        <div class="desk__group" data-for="booking">
+          <fieldset class="topics">
+            <legend>Who would you like to book?</legend>
+{artists}
+          </fieldset>
+          <div class="desk__row">
+            <div class="field"><input id="dkCity" type="text" placeholder=" " autocomplete="address-level2"><label for="dkCity">City</label></div>
+            <div class="field field--date"><input id="dkDate" type="date"><label for="dkDate">Date</label></div>
+          </div>
+        </div>
+        <div class="desk__group" data-for="demo" hidden>
+          <div class="field"><input id="dkStage" type="text" placeholder=" "><label for="dkStage">Artist or stage name</label></div>
+          <div class="field"><input id="dkLink" type="url" placeholder=" " inputmode="url"><label for="dkLink">Link to your music (SoundCloud, YouTube, Drive…)</label></div>
+        </div>
+        <div class="desk__group" data-for="press" hidden>
+          <div class="desk__row">
+            <div class="field"><input id="dkOutlet" type="text" placeholder=" "><label for="dkOutlet">Outlet</label></div>
+            <div class="field field--date"><input id="dkDeadline" type="date"><label for="dkDeadline">Deadline</label></div>
+          </div>
+        </div>
+        <div class="desk__group" data-for="wear" hidden>
+          <fieldset class="topics">
+            <legend>About</legend>
+            <input type="radio" name="dkWear" id="dkw-capsule" value="Capsule 01" checked><label for="dkw-capsule">Capsule 01</label>
+            <input type="radio" name="dkWear" id="dkw-collab" value="A collaboration"><label for="dkw-collab">A collaboration</label>
+            <input type="radio" name="dkWear" id="dkw-other" value="Something else"><label for="dkw-other">Something else</label>
+          </fieldset>
+        </div>
+        <div class="desk__group" data-for="other" hidden>
+          <div class="field"><input id="dkSubject" type="text" placeholder=" "><label for="dkSubject">Subject</label></div>
+        </div>
+
+        <div class="field"><textarea id="dkMsg" rows="5" placeholder=" " required></textarea><label for="dkMsg">Your message</label></div>
+        <p class="desk__to">Goes to <b data-desk-to>thronerecordsmanagement@gmail.com</b></p>
+        <button class="btn btn--gold btn--wide" type="submit" data-magnetic>Seal and send <svg><use href="#i-arrow"/></svg></button>
+        <p class="form-msg" id="deskMsg" role="status"></p>
+      </form>
+
+      <div class="letter-stage" aria-hidden="true">
+        <div class="letter" data-letter>
+          <div class="letter__paper">
+            <div class="letter__head">
+              <p class="letter__to">To: Throne Records · <span data-l-desk>Booking</span> desk</p>
+              <div class="letter__stamp"><svg viewBox="0 0 38 22"><use href="#crownMark"/></svg><span>WV13 · UK</span></div>
+            </div>
+            <p class="letter__date" data-l-date></p>
+            <p class="letter__re">Re: <span data-l-re>A booking enquiry</span></p>
+            <p class="letter__body"><span data-l-body>Dear Throne Records,</span><i class="letter__caret"></i></p>
+            <p class="letter__from">— <span data-l-name>Your name</span><br><small data-l-email>you@example.com</small></p>
+          </div>
+          <div class="letter__envelope"><div class="letter__flap"></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cities cities--contact" aria-label="Where we are" data-tone="dark">
+    <div class="city"><span class="city__name">Lagos</span><span class="city__time" data-tz="Africa/Lagos">--:--</span><span class="city__note">Nigeria · +234 803 311 2018</span></div>
+    <div class="city"><span class="city__name">Moscow</span><span class="city__time" data-tz="Europe/Moscow">--:--</span><span class="city__note">Russia · studio &amp; shows</span></div>
+    <div class="city"><span class="city__name">UK</span><span class="city__time" data-tz="Europe/London">--:--</span><span class="city__note">Label office · 24 Hartill Street, WV13 2JG</span></div>
+  </section>
+
+  <section class="follow" data-tone="light">
+    <div class="section-head">
+      <h2 class="section-title" data-split>Follow the roster</h2>
+      <p class="section-note">Where the artists post first.</p>
+    </div>
+    <ul class="follow-list">
+{chr(10).join(follow)}
+    </ul>
+  </section>
+</main>"""
+
+
 def chrome_for_subdir(chrome):
     """Re-point relative URLs in the shared chrome one directory up."""
     for attr in ("href", "src"):
@@ -585,6 +729,9 @@ def main():
     write_page(ROOT / "shows.html", head, tail, "shows", "Shows — Throne Records",
                "Where Throne Records has played, where it is going next, and how to bring the roster to your city.",
                build_shows_main())
+    write_page(ROOT / "contact.html", head, tail, "contact", "Contact — Throne Records",
+               "Bookings, demos, press and Throne Wear: pick a desk and write to Throne Records.",
+               build_contact_main())
     write_page(ROOT / "wear.html", head, tail, "wear", "Throne Wear — Throne Records",
                "Throne Wear Capsule 01 is in the works. Design the first drop and get first access.",
                build_wear_main())

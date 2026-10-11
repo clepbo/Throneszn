@@ -53,7 +53,7 @@
     <a href="./#music" data-magnetic>Music</a>
     <a href="shows.html" data-magnetic>Shows</a>
     <a href="wear.html" data-magnetic>Wear</a>
-    <a href="./#contact" data-magnetic>Contact</a>
+    <a href="contact.html" data-magnetic>Contact</a>
   </nav>
   <button class="nav__listen" type="button" data-play="how-far" data-cursor="Play" data-magnetic>
     <span class="eq-mini" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
@@ -70,7 +70,7 @@
     <a href="./#music"><small>02</small>Music</a>
     <a href="shows.html"><small>03</small>Shows</a>
     <a href="wear.html"><small>04</small>Wear</a>
-    <a href="./#contact"><small>05</small>Contact</a>
+    <a href="contact.html"><small>05</small>Contact</a>
   </nav>
   <p class="menu__foot">Lagos · Moscow · UK</p>
 </div>
@@ -464,20 +464,13 @@
       </ul>
     </div>
 
-    <form class="contact__form" id="contactForm" novalidate>
-      <fieldset class="topics">
-        <legend>I’m reaching out about</legend>
-        <input type="radio" name="topic" id="t-book" value="Booking" checked><label for="t-book">Booking</label>
-        <input type="radio" name="topic" id="t-demo" value="Demo"><label for="t-demo">Demo</label>
-        <input type="radio" name="topic" id="t-press" value="Press"><label for="t-press">Press</label>
-        <input type="radio" name="topic" id="t-other" value="Other"><label for="t-other">Something else</label>
-      </fieldset>
-      <div class="field"><input id="cName" type="text" placeholder=" " autocomplete="name" required><label for="cName">Your name</label></div>
-      <div class="field"><input id="cEmail" type="email" placeholder=" " autocomplete="email" required><label for="cEmail">Email</label></div>
-      <div class="field"><textarea id="cMsg" rows="4" placeholder=" " required></textarea><label for="cMsg">Message</label></div>
-      <button class="btn btn--gold btn--wide" type="submit" data-magnetic>Send message <svg><use href="#i-arrow"/></svg></button>
-      <p class="form-msg" id="contactMsg" role="status"></p>
-    </form>
+    <div class="contact__desks">
+      <p class="eyebrow">Go straight to a desk</p>
+      <a class="desk-link" href="contact.html?desk=booking" data-cursor="Open"><span>Booking</span><small>Shows, features, appearances</small><svg><use href="#i-arrow"/></svg></a>
+      <a class="desk-link" href="contact.html?desk=demo" data-cursor="Open"><span>Demo</span><small>Send us your music</small><svg><use href="#i-arrow"/></svg></a>
+      <a class="desk-link" href="contact.html?desk=press" data-cursor="Open"><span>Press</span><small>Interviews and features</small><svg><use href="#i-arrow"/></svg></a>
+      <a class="desk-link" href="contact.html?desk=wear" data-cursor="Open"><span>Throne Wear</span><small>Orders and collaborations</small><svg><use href="#i-arrow"/></svg></a>
+    </div>
   </section>
 </main>
 

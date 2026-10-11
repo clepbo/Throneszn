@@ -912,3 +912,103 @@ body.is-playing .player__info strong::before { content: ""; display: inline-bloc
 .notify__title { margin: 0 0 18px; font: 900 clamp(64px, 10vw, 160px)/.84 var(--f-display); text-transform: uppercase; }
 .notify__text { color: var(--mute); margin: 0 0 28px; max-width: 44ch; }
 .notify .inline-form { width: 100%; }
+
+/* =====================================================================
+   HOME CONTACT TEASER — desk shortcuts
+   ===================================================================== */
+.contact__desks { display: grid; align-content: start; border-top: 1px solid var(--line); }
+.contact__desks .eyebrow { margin: 18px 0 8px; }
+.desk-link {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "l arrow" "s arrow"; gap: 2px 16px; align-items: center;
+  padding: 20px 0; border-bottom: 1px solid var(--line); transition: padding .45s var(--ease), color .3s;
+}
+.desk-link span { grid-area: l; font: 700 clamp(28px, 3vw, 44px)/1 var(--f-display); text-transform: uppercase; }
+.desk-link small { grid-area: s; color: var(--mute); font-size: 14px; }
+.desk-link svg { grid-area: arrow; width: 22px; height: 22px; transition: transform .45s var(--ease); }
+.desk-link:hover { padding-left: 14px; color: var(--accent); }
+.desk-link:hover svg { transform: translate(4px, -4px); }
+
+/* =====================================================================
+   CONTACT PAGE
+   ===================================================================== */
+.pg-hero--contact { align-items: end; }
+.pg-hero--contact .pg-title .ap-line > span { background: linear-gradient(180deg, #f6cf7c 0%, var(--gold) 45%, var(--gold-deep) 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.direct { min-width: 0; }
+.direct .contact__lines li { grid-template-columns: 130px minmax(0, 1fr); }
+
+.desk { padding: clamp(72px, 12vh, 140px) var(--gutter); }
+.desk-tabs { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border-top: 1px solid var(--line); margin-bottom: clamp(28px, 5vh, 48px); }
+.desk-tab {
+  position: relative; display: grid; gap: 6px; align-content: start; text-align: left; padding: 18px 16px 20px 0;
+  border-bottom: 1px solid var(--line); transition: color .3s;
+}
+.desk-tab::after { content: ""; position: absolute; left: 0; right: 16px; bottom: -1px; height: 3px; background: var(--gold); transform: scaleX(0); transform-origin: left; transition: transform .5s var(--ease); }
+.desk-tab[aria-selected="true"]::after { transform: scaleX(1); }
+.desk-tab__k { font: 500 10px/1 var(--f-mono); letter-spacing: .12em; color: var(--mute); }
+.desk-tab__l { font: 700 clamp(22px, 2.2vw, 32px)/1 var(--f-display); text-transform: uppercase; }
+.desk-tab small { color: var(--mute); font-size: 13px; }
+.desk-tab:hover .desk-tab__l, .desk-tab[aria-selected="true"] .desk-tab__l { color: var(--accent); }
+@media (max-width: 860px) {
+  .desk-tabs { display: flex; overflow-x: auto; scrollbar-width: none; margin-inline: calc(var(--gutter) * -1); padding-inline: var(--gutter); }
+  .desk-tabs::-webkit-scrollbar { display: none; }
+  .desk-tab { flex: none; width: 160px; }
+}
+.desk__grid { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: clamp(32px, 5vw, 80px); align-items: start; }
+.desk__form { display: grid; gap: 14px; }
+.desk__group { display: grid; gap: 14px; }
+.desk__group:not([hidden]) { animation: deskIn .5s var(--ease); }
+@keyframes deskIn { from { opacity: 0; transform: translateY(12px); } }
+.desk__row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+.field--date input { color-scheme: inherit; min-height: 62px; }
+.field--date label { transform: translateY(-22px) scale(.72); }
+.desk__to { margin: 0; font: 500 11px/1.5 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--mute); overflow-wrap: anywhere; }
+.desk__to b { font-weight: 500; color: var(--bone); text-transform: none; letter-spacing: 0; }
+@media (max-width: 900px) { .desk__grid { grid-template-columns: 1fr; } .letter-stage { position: relative; top: auto; padding-bottom: 40px; } .letter__paper { min-height: 300px; } }
+@media (max-width: 520px) { .desk__row { grid-template-columns: 1fr; } }
+
+/* the letter that writes itself */
+.letter-stage { position: sticky; top: calc(var(--nav-h) + 24px); display: grid; place-items: center; padding: 24px 0 120px; perspective: 1200px; }
+.letter { position: relative; width: min(100%, 460px); }
+.letter__paper {
+  position: relative; z-index: 2; padding: clamp(22px, 3vw, 34px); background: #fbf7ee; color: #17130d; min-height: 360px;
+  box-shadow: 0 30px 60px -24px rgba(23, 19, 13, .45); transform: rotate(-1.5deg);
+  background-image: repeating-linear-gradient(180deg, transparent 0 31px, rgba(23, 19, 13, .07) 31px 32px); background-position: 0 18px;
+  transition: transform .8s cubic-bezier(.7,0,.2,1), opacity .4s;
+}
+.letter__head { display: flex; justify-content: space-between; gap: 16px; align-items: start; }
+.letter__to { margin: 0; font: 500 11px/1.5 var(--f-mono); letter-spacing: .1em; text-transform: uppercase; }
+.letter__stamp { flex: none; width: 74px; padding: 8px 6px; border: 2px dashed #a97a2b; display: grid; justify-items: center; gap: 4px; transform: rotate(6deg); }
+.letter__stamp svg { width: 40px; height: 24px; color: #a97a2b; }
+.letter__stamp span { font: 500 8px/1 var(--f-mono); letter-spacing: .1em; color: #a97a2b; }
+.letter__date { margin: 6px 0 18px; font: 500 11px/1 var(--f-mono); color: #7a705c; }
+.letter__re { margin: 0 0 16px; font: 700 22px/1.1 var(--f-display); text-transform: uppercase; overflow-wrap: anywhere; }
+.letter__body { margin: 0 0 22px; font: 400 17px/32px var(--f-body); white-space: pre-wrap; overflow-wrap: anywhere; min-height: 96px; max-height: 192px; overflow: hidden; }
+.letter__caret { display: inline-block; width: 2px; height: 18px; margin-left: 2px; vertical-align: -3px; background: #17130d; animation: blink 1s steps(1) infinite; }
+.letter__from { margin: 0; font: 700 18px/1.2 var(--f-display); text-transform: uppercase; }
+.letter__from small { font: 400 13px/1.4 var(--f-body); text-transform: none; color: #7a705c; }
+.letter__envelope {
+  position: absolute; z-index: 3; left: -4%; right: -4%; bottom: -40px; height: 56%; background: var(--gold); opacity: 0; transform: translateY(40px);
+  clip-path: polygon(0 0, 50% 46%, 100% 0, 100% 100%, 0 100%); transition: opacity .3s, transform .5s var(--ease);
+  box-shadow: 0 30px 60px -24px rgba(23, 19, 13, .5);
+}
+.letter__flap {
+  position: absolute; left: 0; right: 0; top: 0; height: 100%; background: var(--gold-deep);
+  clip-path: polygon(0 0, 100% 0, 50% 52%); transform-origin: top; transform: rotateX(180deg); transition: transform .6s cubic-bezier(.7,0,.2,1) .55s;
+}
+/* sending: paper drops in, envelope closes, flies off */
+.letter.is-sending .letter__envelope { opacity: 1; transform: none; }
+.letter.is-sending .letter__paper { transform: translateY(42%) scale(.92) rotate(0deg); }
+.letter.is-sending .letter__flap { transform: rotateX(0deg); }
+.letter.is-flying { transition: transform .9s cubic-bezier(.7,0,.2,1), opacity .9s; transform: translate(60%, -80%) rotate(14deg) scale(.6); opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .letter.is-flying { transform: none; } }
+
+.cities--contact { border-top: 0; }
+
+.follow { padding: clamp(72px, 12vh, 140px) var(--gutter); }
+.follow-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.follow-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px 24px; padding: 22px 0; border-bottom: 1px solid var(--line); }
+.follow-row__name { font: 900 clamp(44px, 7vw, 112px)/.9 var(--f-display); text-transform: uppercase; transition: color .3s; }
+.follow-row__name:hover { color: var(--accent); }
+.follow-row__links { display: flex; flex-wrap: wrap; gap: 6px; }
+.follow-row__links a { padding: 10px 16px; border: 1px solid var(--line); border-radius: 999px; font: 500 11px/1 var(--f-mono); letter-spacing: .12em; text-transform: uppercase; transition: border-color .25s, color .25s; }
+.follow-row__links a:hover { border-color: var(--accent); color: var(--accent); }

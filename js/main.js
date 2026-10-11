@@ -549,7 +549,7 @@
     bindMagnetic(main);
     bindRoster(main); bindShows(main); bindTilt(main); bindForms(main); bindClocks(main);
     bindTrail(main); bindPiles(main);
-    bindMap(main); bindArchive(main); bindRequest(main); bindTee(main); bindStrip(main);
+    bindMap(main); bindArchive(main); bindRequest(main); bindTee(main); bindStrip(main); bindDesk(main);
 
     if (animate) {
       ctx = gsap.context(() => {
@@ -592,6 +592,11 @@
           rise('.chip', '.chips', { y: 20 });
           rise('.arc', '.arc-list');
           rise('.ticket-wrap', '.ticket-wrap', { y: 80 });
+        } else if (page === 'contact') {
+          rise('.direct li', '.direct', { y: 24 });
+          rise('.desk-tab', '.desk-tabs', { y: 30 });
+          rise('.city', '.cities');
+          rise('.follow-row', '.follow-list');
         } else if (page === 'wear') {
           rise('.studio__controls > *', '.studio__controls', { y: 30 });
           rise('.look', '.mood__strip', { y: 80 });
@@ -628,10 +633,10 @@
   function introPage(main) {
     if (!animate) return;
     const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
-    if (main.dataset.page === 'shows' || main.dataset.page === 'wear') {
+    if (['shows', 'wear', 'contact'].includes(main.dataset.page)) {
       tl.from($$('.ap-line > span', main), { yPercent: 110, duration: 1.2, stagger: 0.08 })
         .from($$('.pg-hero .eyebrow, .pg-lede, .pg-hero .ap-actions', main), { y: 24, opacity: 0, duration: 1, stagger: 0.07 }, 0.3)
-        .from($$('.map, .wear-hero__a, .wear-hero__b', main), { opacity: 0, y: 40, duration: 1.4, stagger: 0.12 }, 0.2)
+        .from($$('.map, .wear-hero__a, .wear-hero__b, .direct', main), { opacity: 0, y: 40, duration: 1.4, stagger: 0.12 }, 0.2)
         .from($$('.badge', main), { scale: 0, duration: 1.2, ease: 'back.out(1.6)' }, 0.7);
     } else if (main.dataset.page === 'artist') {
       tl.from($$('.ap-line > span', main), { yPercent: 110, duration: 1.2, stagger: 0.08 })
@@ -844,6 +849,91 @@
     });
   }
 
+  // Contact desks: tabs switch the form, the letter writes itself, sending seals the envelope.
+  function bindDesk(main) {
+    const form = $('#deskForm', main);
+    if (!form) return;
+    const tabs = $$('.desk-tab', main), groups = $$('.desk__group', form), letter = $('[data-letter]', main);
+    const f = id => $('#' + id, form), msg = $('#deskMsg', main);
+    const L = k => $(`[data-l-${k}]`, main);
+    const fmtDate = v => v ? new Date(v + 'T12:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+    L('date').textContent = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    let desk = 'booking';
+    const re = () => {
+      const picks = $$('input[name="dkArtist"]:checked', form).map(b => b.value);
+      switch (desk) {
+        case 'booking': {
+          const who = picks.length ? picks.join(' + ') : 'the roster';
+          const where = f('dkCity').value.trim(), when = fmtDate(f('dkDate').value);
+          return `Booking ${who}${where ? ' in ' + where : ''}${when ? ', ' + when : ''}`;
+        }
+        case 'demo': return f('dkStage').value.trim() ? `A demo from ${f('dkStage').value.trim()}` : 'A demo for the label';
+        case 'press': return `Press${f('dkOutlet').value.trim() ? ' · ' + f('dkOutlet').value.trim() : ' enquiry'}${f('dkDeadline').value ? ' · due ' + fmtDate(f('dkDeadline').value) : ''}`;
+        case 'wear': return `Throne Wear · ${($('input[name="dkWear"]:checked', form) || {}).value || 'Capsule 01'}`;
+        default: return f('dkSubject').value.trim() || 'Hello from a fan';
+      }
+    };
+    const render = () => {
+      L('re').textContent = re();
+      const body = f('dkMsg').value.trim();
+      const extra = desk === 'demo' && f('dkLink').value.trim() ? `\n\nListen: ${f('dkLink').value.trim()}` : '';
+      L('body').textContent = body ? `Dear Throne Records,\n\n${body}${extra}` : `Dear Throne Records,${extra}`;
+      L('name').textContent = f('dkName').value.trim() || 'Your name';
+      L('email').textContent = f('dkEmail').value.trim() || 'you@example.com';
+    };
+    const select = (key, focus) => {
+      const tab = tabs.find(t => t.dataset.desk === key) || tabs[0];
+      desk = tab.dataset.desk;
+      tabs.forEach(t => { const on = t === tab; t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1; });
+      form.setAttribute('aria-labelledby', tab.id);
+      groups.forEach(g => { g.hidden = g.dataset.for !== desk; });
+      $('[data-desk-to]', main).textContent = tab.dataset.to;
+      L('desk').textContent = $('.desk-tab__l', tab).textContent;
+      msg.textContent = '';
+      const strip = tab.parentElement;
+      if (strip.scrollWidth > strip.clientWidth + 1) strip.scrollTo({ left: tab.offsetLeft - strip.offsetLeft - 16, behavior: reduced ? 'auto' : 'smooth' });
+      if (focus) tab.focus({ preventScroll: true });
+      render();
+    };
+    tabs.forEach((t, i) => {
+      t.addEventListener('click', () => select(t.dataset.desk));
+      t.addEventListener('keydown', e => {
+        const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+        if (d) { e.preventDefault(); select(tabs[(i + d + tabs.length) % tabs.length].dataset.desk, true); }
+      });
+    });
+    form.addEventListener('input', render);
+    form.addEventListener('change', render);
+    // ?desk=booking&artist=bros-throne preselects
+    const fromQuery = () => {
+      const q = new URLSearchParams(location.search);
+      if (q.get('artist')) { const box = f('dk-' + q.get('artist')); if (box) box.checked = true; }
+      select(q.get('desk') || 'booking');
+    };
+    addEventListener('throne:query', fromQuery);
+    cleanups.push(() => removeEventListener('throne:query', fromQuery));
+    fromQuery();
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      let err = '';
+      if (!f('dkName').value.trim()) err = 'Add your name so we know who to reply to.';
+      else if (!emailOk(f('dkEmail').value.trim())) err = 'Enter an email like name@example.com.';
+      else if (desk === 'demo' && !/^https?:\/\/\S+\.\S+/.test(f('dkLink').value.trim())) err = 'Add a link to your music, starting with https://';
+      else if (f('dkMsg').value.trim().length < 10) err = 'Tell us a little more in the message.';
+      msg.classList.toggle('is-error', !!err);
+      if (err) { msg.textContent = err; return; }
+      const to = $('[data-desk-to]', main).textContent;
+      msg.textContent = '';
+      letter.classList.add('is-sending');
+      setTimeout(() => letter.classList.add('is-flying'), reduced ? 0 : 1300);
+      setTimeout(() => {
+        msg.textContent = `Prototype: your letter to ${to} is sealed and ready to send once the form is wired up. Nothing was sent.`;
+        letter.classList.remove('is-flying', 'is-sending');
+      }, reduced ? 50 : 2400);
+    });
+  }
+
   // Photo trail: pictures drop where the pointer travels.
   function bindTrail(main) {
     const zone = $('[data-trail]', main);
@@ -885,10 +975,21 @@
       const st = cards.map(() => ({ x: 0, y: 0, r: 0, s: 1, vx: 0, vy: 0 }));
       const section = pile.closest('section') || main;
       const tidyBtn = $('[data-pile-tidy]', section), shuffleBtn = $('[data-pile-shuffle]', section);
-      let top = cards.length, tidy = false, dealt = false;
+      let top = cards.length, tidy = false;
 
+      // st[i] is where a print lives on the table; `deal.p` (0 → 1, driven by scroll) blends
+      // each print from a stack in the middle out to that spot, so scrolling back gathers them up.
+      const deal = { p: 0 };
+      const K = 0.06; // stagger between prints
+      const stackR = cards.map(() => (Math.random() - 0.5) * 10);
+      const dealt = i => { const e = clamp(deal.p * (1 + (cards.length - 1) * K) - i * K, 0, 1); return 1 - Math.pow(1 - e, 3); };
       const size = i => ({ cw: cards[i].offsetWidth, ch: cards[i].offsetHeight });
-      const apply = i => { const c = st[i]; cards[i].style.transform = `translate3d(${c.x}px, ${c.y}px, 0) rotate(${c.r}deg) scale(${c.s})`; };
+      const apply = i => {
+        const c = st[i], e = dealt(i), { cw, ch } = size(i);
+        const x = lerp((pile.clientWidth - cw) / 2, c.x, e), y = lerp((pile.clientHeight - ch) / 2 + (cards.length - i) * -2, c.y, e);
+        cards[i].style.transform = `translate3d(${x}px, ${y}px, 0) rotate(${lerp(stackR[i], c.r, e)}deg) scale(${c.s * lerp(0.92, 1, e)})`;
+      };
+      const applyAll = () => cards.forEach((_, i) => apply(i));
       const scatter = () => cards.map((_, i) => {
         const { cw, ch } = size(i);
         return { x: Math.random() * Math.max(0, pile.clientWidth - cw), y: Math.random() * Math.max(0, pile.clientHeight - ch), r: (Math.random() - 0.5) * 26 };
@@ -912,17 +1013,17 @@
         else { Object.assign(st[i], t); apply(i); }
       });
 
-      // start stacked in the middle, deal out when the table comes into view
-      cards.forEach((card, i) => {
-        const { cw, ch } = size(i);
-        Object.assign(st[i], { x: (pile.clientWidth - cw) / 2, y: (pile.clientHeight - ch) / 2, r: (Math.random() - 0.5) * 8 });
-        card.style.zIndex = i + 1; apply(i);
-      });
-      const deal = () => { if (dealt) return; dealt = true; moveTo(scatter(), 0.06); };
-      if ('IntersectionObserver' in window) {
-        const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { deal(); io.disconnect(); } }, { threshold: 0.3 });
-        io.observe(pile); cleanups.push(() => io.disconnect());
-      } else deal();
+      // every print gets a spot on the table, then scroll deals them out (and back in)
+      scatter().forEach((t, i) => { Object.assign(st[i], t); cards[i].style.zIndex = i + 1; });
+      if (animate) {
+        const trig = ScrollTrigger.create({
+          trigger: pile, start: 'top 95%', end: 'top 45%',
+          onUpdate: self => gsap.to(deal, { p: self.progress, duration: 0.6, ease: 'power2.out', overwrite: true, onUpdate: applyAll }),
+          onRefresh: self => { deal.p = self.progress; applyAll(); },
+        });
+        cleanups.push(() => trig.kill());
+      } else deal.p = 1;
+      applyAll();
 
       const fling = i => {
         const c = st[i], card = cards[i];
@@ -944,7 +1045,7 @@
       cards.forEach((card, i) => {
         let start = null, prev = null, moved = false;
         card.addEventListener('pointerdown', e => {
-          if (e.button !== 0) return;
+          if (e.button !== 0 || dealt(i) < 0.9) return;
           if (hasGSAP) gsap.killTweensOf(st[i]);
           card.setPointerCapture(e.pointerId);
           card.style.zIndex = ++top; card.classList.add('is-dragging');
@@ -1006,7 +1107,7 @@
   }
   function bindRoster(main) {
     if (!finePointer || reduced) return;
-    $$('.artist-row', main).forEach(row => {
+    $$('.artist-row, .follow-row', main).forEach(row => {
       row.addEventListener('pointerenter', () => { floatImg.src = row.dataset.img; float.classList.add('is-on'); });
       row.addEventListener('pointerleave', () => float.classList.remove('is-on'));
     });
@@ -1133,7 +1234,7 @@
     try {
       const fetching = fetch(url.href, { credentials: 'same-origin' }).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); });
       const file = (url.pathname.split('/').pop() || '').replace(/\.html$/, '');
-      const labels = { shows: 'Shows', wear: 'Throne Wear', index: 'Throne', '': 'Throne' };
+      const labels = { shows: 'Shows', wear: 'Throne Wear', contact: 'Contact', index: 'Throne', '': 'Throne' };
       await coverIn(labels[file] !== undefined ? labels[file] : file.replace(/-/g, ' '));
       const doc = new DOMParser().parseFromString(await fetching, 'text/html');
       const nextMain = doc.querySelector('main');
@@ -1164,6 +1265,14 @@
     if (a.getAttribute('href') === '#top') { e.preventDefault(); closeMenu(); scrollToTarget(0); return; }
     const url = new URL(a.href, location.href);
     if (url.origin !== location.origin) return;
+    if (normPath(url) === normPath(location) && url.search !== location.search) {
+      e.preventDefault(); closeMenu();
+      history.pushState({}, '', url.href);
+      dispatchEvent(new Event('throne:query'));
+      const el = document.getElementById('write');
+      if (el) scrollToTarget(el);
+      return;
+    }
     if (normPath(url) === normPath(location)) {
       e.preventDefault(); closeMenu();
       const el = url.hash && document.getElementById(decodeURIComponent(url.hash.slice(1)));

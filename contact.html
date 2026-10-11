@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en" data-tone="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Contact — Throne Records</title>
+<meta name="description" content="Bookings, demos, press and Throne Wear: pick a desk and write to Throne Records.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;900&family=Hanken+Grotesk:wght@400;500;600&family=Martian+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="css/style.css">
+<meta name="site-root" content="./">
+</head>
+<body class="is-loading" data-page="contact">
+
+<!-- ============ LOADER ============ -->
+<div class="loader" id="loader" aria-hidden="true">
+  <canvas class="loader__crown" id="loaderCrown"></canvas>
+  <div class="loader__meta">
+    <span>Throne Records</span>
+    <span class="loader__count" id="loaderCount">000</span>
+  </div>
+</div>
+
+<!-- ============ CURSOR ============ -->
+<div class="cursor" id="cursor" aria-hidden="true"><span class="cursor__label" id="cursorLabel"></span></div>
+<div class="artist-float" id="artistFloat" aria-hidden="true"><img alt="" id="artistFloatImg"></div>
+<div class="show-peek" id="showPeek" aria-hidden="true"><img alt="" id="showPeekImg"></div>
+
+<!-- ============ PAGE TRANSITION ============ -->
+<div class="curtain" id="curtain" aria-hidden="true">
+  <div class="curtain__cols"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <p class="curtain__label" id="curtainLabel"></p>
+</div>
+
+<!-- ============ LIGHTBOX ============ -->
+<div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="Photo viewer">
+  <img class="lightbox__img" id="lightboxImg" alt="">
+  <p class="lightbox__count" id="lightboxCount"></p>
+  <button class="lightbox__btn lightbox__close" type="button" data-lb="close">Close</button>
+  <button class="lightbox__btn lightbox__prev" type="button" data-lb="prev" aria-label="Previous photo">←</button>
+  <button class="lightbox__btn lightbox__next" type="button" data-lb="next" aria-label="Next photo">→</button>
+</div>
+
+<!-- ============ HEADER ============ -->
+<header class="nav" id="nav">
+  <a class="nav__brand" href="./" aria-label="Throne Records home">
+    <svg class="nav__crown" viewBox="0 0 38 22" aria-hidden="true"><use href="#crownMark"/></svg>
+    <span>Throne</span>
+  </a>
+  <nav class="nav__links" aria-label="Primary">
+    <a href="./#artists" data-magnetic>Artists</a>
+    <a href="./#music" data-magnetic>Music</a>
+    <a href="shows.html" data-magnetic>Shows</a>
+    <a href="wear.html" data-magnetic>Wear</a>
+    <a href="contact.html" data-magnetic>Contact</a>
+  </nav>
+  <button class="nav__listen" type="button" data-play="how-far" data-cursor="Play" data-magnetic>
+    <span class="eq-mini" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+    <span class="nav__listen-text">Listen</span>
+  </button>
+  <button class="nav__burger" id="burger" type="button" aria-expanded="false" aria-controls="menu" aria-label="Open menu">
+    <span></span><span></span>
+  </button>
+</header>
+
+<div class="menu" id="menu" hidden>
+  <nav class="menu__links" aria-label="Mobile">
+    <a href="./#artists"><small>01</small>Artists</a>
+    <a href="./#music"><small>02</small>Music</a>
+    <a href="shows.html"><small>03</small>Shows</a>
+    <a href="wear.html"><small>04</small>Wear</a>
+    <a href="contact.html"><small>05</small>Contact</a>
+  </nav>
+  <p class="menu__foot">Lagos · Moscow · UK</p>
+</div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- Crown mark: dot-matrix, echoing the logo -->
+    <symbol id="crownMark" viewBox="0 0 38 22">
+      <g fill="currentColor">
+        <circle cx="3" cy="3" r="1.6"/><circle cx="19" cy="2" r="1.6"/><circle cx="35" cy="3" r="1.6"/>
+        <circle cx="11" cy="6" r="1.6"/><circle cx="27" cy="6" r="1.6"/>
+        <circle cx="3" cy="8" r="1.6"/><circle cx="19" cy="7" r="1.6"/><circle cx="35" cy="8" r="1.6"/>
+        <circle cx="7" cy="11" r="1.6"/><circle cx="11" cy="11" r="1.6"/><circle cx="15" cy="11" r="1.6"/><circle cx="19" cy="12" r="1.6"/><circle cx="23" cy="11" r="1.6"/><circle cx="27" cy="11" r="1.6"/><circle cx="31" cy="11" r="1.6"/>
+        <circle cx="3" cy="13" r="1.6"/><circle cx="35" cy="13" r="1.6"/>
+        <circle cx="3" cy="18" r="1.6"/><circle cx="7" cy="18" r="1.6"/><circle cx="11" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/><circle cx="19" cy="18" r="1.6"/><circle cx="23" cy="18" r="1.6"/><circle cx="27" cy="18" r="1.6"/><circle cx="31" cy="18" r="1.6"/><circle cx="35" cy="18" r="1.6"/>
+      </g>
+    </symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path fill="currentColor" d="M7 4.5v15l13-7.5z"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><path fill="currentColor" d="M6 4h4.5v16H6zM13.5 4H18v16h-4.5z"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M5 19 19 5M8 5h11v11"/></symbol>
+  </defs>
+</svg>
+
+<main id="top" data-page="contact">
+
+  <section class="pg-hero pg-hero--contact" data-tone="dark">
+    <div class="pg-hero__text">
+      <p class="eyebrow">Contact</p>
+      <h1 class="pg-title" aria-label="Pull up a chair."><span class="ap-line"><span>Pull up</span></span><span class="ap-line"><span>a chair.</span></span></h1>
+      <p class="pg-lede">Bookings, features, press, a demo you believe in, or a question about Throne Wear. Pick a desk and tell us what you have got.</p>
+      <div class="ap-actions"><a class="btn btn--gold" href="#write" data-magnetic>Write to a desk</a></div>
+    </div>
+    <div class="direct">
+      <p class="eyebrow">Direct lines · tap to copy</p>
+      <ul class="contact__lines">
+        <li><span>Email</span><button class="copy" type="button" data-copy="info@throneszn.com">info@throneszn.com</button></li>
+        <li><span>Management</span><button class="copy" type="button" data-copy="thronerecordsmanagement@gmail.com">thronerecordsmanagement@gmail.com</button></li>
+        <li><span>Phone · UK</span><button class="copy" type="button" data-copy="077 7662 2184">077 7662 2184</button></li>
+        <li><span>Phone · NG</span><button class="copy" type="button" data-copy="+234 803 311 2018">+234 803 311 2018</button></li>
+        <li><span>Post</span><span>24 Hartill Street, WV13 2JG, United Kingdom</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="desk" id="write" data-tone="light">
+    <div class="section-head">
+      <h2 class="section-title" data-split>Pick a desk</h2>
+      <p class="section-note">The form changes with the desk, and your letter writes itself as you type.</p>
+    </div>
+    <div class="desk-tabs" role="tablist" aria-label="Who is this for?">
+        <button class="desk-tab" type="button" role="tab" id="tab-booking" aria-controls="deskForm" aria-selected="true" data-desk="booking" data-to="thronerecordsmanagement@gmail.com"><span class="desk-tab__k">01</span><span class="desk-tab__l">Booking</span><small>Shows, features, appearances</small></button>
+        <button class="desk-tab" type="button" role="tab" id="tab-demo" aria-controls="deskForm" aria-selected="false" data-desk="demo" data-to="info@throneszn.com"><span class="desk-tab__k">02</span><span class="desk-tab__l">Demo</span><small>Send us your music</small></button>
+        <button class="desk-tab" type="button" role="tab" id="tab-press" aria-controls="deskForm" aria-selected="false" data-desk="press" data-to="info@throneszn.com"><span class="desk-tab__k">03</span><span class="desk-tab__l">Press</span><small>Interviews and features</small></button>
+        <button class="desk-tab" type="button" role="tab" id="tab-wear" aria-controls="deskForm" aria-selected="false" data-desk="wear" data-to="info@throneszn.com"><span class="desk-tab__k">04</span><span class="desk-tab__l">Throne Wear</span><small>Orders and collaborations</small></button>
+        <button class="desk-tab" type="button" role="tab" id="tab-other" aria-controls="deskForm" aria-selected="false" data-desk="other" data-to="info@throneszn.com"><span class="desk-tab__k">05</span><span class="desk-tab__l">Something else</span><small>Anything we missed</small></button>
+    </div>
+    <div class="desk__grid">
+      <form class="desk__form" id="deskForm" role="tabpanel" aria-labelledby="tab-booking" novalidate>
+        <div class="field"><input id="dkName" type="text" placeholder=" " autocomplete="name" required><label for="dkName">Your name</label></div>
+        <div class="field"><input id="dkEmail" type="email" placeholder=" " autocomplete="email" required><label for="dkEmail">Email</label></div>
+
+        <div class="desk__group" data-for="booking">
+          <fieldset class="topics">
+            <legend>Who would you like to book?</legend>
+            <input type="checkbox" name="dkArtist" id="dk-bros-throne" value="Bros Throne"><label for="dk-bros-throne">Bros Throne</label>
+            <input type="checkbox" name="dkArtist" id="dk-kidd-carder" value="Kidd Carder"><label for="dk-kidd-carder">Kidd Carder</label>
+            <input type="checkbox" name="dkArtist" id="dk-lilcase" value="Lilcase"><label for="dk-lilcase">Lilcase</label>
+          </fieldset>
+          <div class="desk__row">
+            <div class="field"><input id="dkCity" type="text" placeholder=" " autocomplete="address-level2"><label for="dkCity">City</label></div>
+            <div class="field field--date"><input id="dkDate" type="date"><label for="dkDate">Date</label></div>
+          </div>
+        </div>
+        <div class="desk__group" data-for="demo" hidden>
+          <div class="field"><input id="dkStage" type="text" placeholder=" "><label for="dkStage">Artist or stage name</label></div>
+          <div class="field"><input id="dkLink" type="url" placeholder=" " inputmode="url"><label for="dkLink">Link to your music (SoundCloud, YouTube, Drive…)</label></div>
+        </div>
+        <div class="desk__group" data-for="press" hidden>
+          <div class="desk__row">
+            <div class="field"><input id="dkOutlet" type="text" placeholder=" "><label for="dkOutlet">Outlet</label></div>
+            <div class="field field--date"><input id="dkDeadline" type="date"><label for="dkDeadline">Deadline</label></div>
+          </div>
+        </div>
+        <div class="desk__group" data-for="wear" hidden>
+          <fieldset class="topics">
+            <legend>About</legend>
+            <input type="radio" name="dkWear" id="dkw-capsule" value="Capsule 01" checked><label for="dkw-capsule">Capsule 01</label>
+            <input type="radio" name="dkWear" id="dkw-collab" value="A collaboration"><label for="dkw-collab">A collaboration</label>
+            <input type="radio" name="dkWear" id="dkw-other" value="Something else"><label for="dkw-other">Something else</label>
+          </fieldset>
+        </div>
+        <div class="desk__group" data-for="other" hidden>
+          <div class="field"><input id="dkSubject" type="text" placeholder=" "><label for="dkSubject">Subject</label></div>
+        </div>
+
+        <div class="field"><textarea id="dkMsg" rows="5" placeholder=" " required></textarea><label for="dkMsg">Your message</label></div>
+        <p class="desk__to">Goes to <b data-desk-to>thronerecordsmanagement@gmail.com</b></p>
+        <button class="btn btn--gold btn--wide" type="submit" data-magnetic>Seal and send <svg><use href="#i-arrow"/></svg></button>
+        <p class="form-msg" id="deskMsg" role="status"></p>
+      </form>
+
+      <div class="letter-stage" aria-hidden="true">
+        <div class="letter" data-letter>
+          <div class="letter__paper">
+            <div class="letter__head">
+              <p class="letter__to">To: Throne Records · <span data-l-desk>Booking</span> desk</p>
+              <div class="letter__stamp"><svg viewBox="0 0 38 22"><use href="#crownMark"/></svg><span>WV13 · UK</span></div>
+            </div>
+            <p class="letter__date" data-l-date></p>
+            <p class="letter__re">Re: <span data-l-re>A booking enquiry</span></p>
+            <p class="letter__body"><span data-l-body>Dear Throne Records,</span><i class="letter__caret"></i></p>
+            <p class="letter__from">— <span data-l-name>Your name</span><br><small data-l-email>you@example.com</small></p>
+          </div>
+          <div class="letter__envelope"><div class="letter__flap"></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cities cities--contact" aria-label="Where we are" data-tone="dark">
+    <div class="city"><span class="city__name">Lagos</span><span class="city__time" data-tz="Africa/Lagos">--:--</span><span class="city__note">Nigeria · +234 803 311 2018</span></div>
+    <div class="city"><span class="city__name">Moscow</span><span class="city__time" data-tz="Europe/Moscow">--:--</span><span class="city__note">Russia · studio &amp; shows</span></div>
+    <div class="city"><span class="city__name">UK</span><span class="city__time" data-tz="Europe/London">--:--</span><span class="city__note">Label office · 24 Hartill Street, WV13 2JG</span></div>
+  </section>
+
+  <section class="follow" data-tone="light">
+    <div class="section-head">
+      <h2 class="section-title" data-split>Follow the roster</h2>
+      <p class="section-note">Where the artists post first.</p>
+    </div>
+    <ul class="follow-list">
+      <li class="follow-row" data-img="assets/img/portfolio_bros_throne.jpg"><a class="follow-row__name" href="artists/bros-throne.html" data-cursor="View">Bros Throne</a><span class="follow-row__links"><a href="https://www.instagram.com/brosthrone" target="_blank" rel="noopener" data-magnetic>Instagram</a> <a href="https://www.youtube.com/@BrosThrone" target="_blank" rel="noopener" data-magnetic>YouTube</a> <a href="https://x.com/brosthrone" target="_blank" rel="noopener" data-magnetic>X</a> <a href="https://www.facebook.com/brosthrone" target="_blank" rel="noopener" data-magnetic>Facebook</a> <a href="https://www.snapchat.com/add/brosthrone" target="_blank" rel="noopener" data-magnetic>Snapchat</a></span></li>
+      <li class="follow-row" data-img="assets/img/portfolio_kid22.jpg"><a class="follow-row__name" href="artists/kidd-carder.html" data-cursor="View">Kidd Carder</a><span class="follow-row__links"><a href="https://www.youtube.com/@Kiddcarder" target="_blank" rel="noopener" data-magnetic>YouTube</a></span></li>
+    </ul>
+  </section>
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="footer" data-tone="dark">
+  <div class="footer__top">
+    <ul class="socials">
+      <li><a href="https://www.instagram.com/brosthrone" target="_blank" rel="noopener" data-magnetic>Instagram</a></li>
+      <li><a href="https://www.youtube.com/@BrosThrone" target="_blank" rel="noopener" data-magnetic>YouTube</a></li>
+      <li><a href="https://x.com/brosthrone" target="_blank" rel="noopener" data-magnetic>X</a></li>
+      <li><a href="https://www.facebook.com/brosthrone" target="_blank" rel="noopener" data-magnetic>Facebook</a></li>
+      <li><a href="https://www.snapchat.com/add/brosthrone" target="_blank" rel="noopener" data-magnetic>Snapchat</a></li>
+    </ul>
+    <a class="footer__up" href="#top" data-magnetic>Back to top ↑</a>
+  </div>
+  <p class="footer__word" aria-hidden="true">THRONE</p>
+  <div class="footer__base">
+    <span>© Throne Records 2026</span>
+    <span>Lagos · Moscow · UK</span>
+  </div>
+</footer>
+
+<!-- ============ PLAYER ============ -->
+<div class="player" id="player" aria-label="Audio player">
+  <img class="player__art" id="playerArt" src="assets/img/featured_fet1_1.jpg" alt="">
+  <div class="player__info">
+    <strong id="playerTitle">How Far</strong>
+    <span id="playerArtist">Bros Throne</span>
+  </div>
+  <button class="player__toggle" id="playerToggle" type="button" aria-label="Play">
+    <svg id="playerIcon"><use href="#i-play"/></svg>
+  </button>
+  <div class="player__bar">
+    <span class="player__time" id="playerCur">0:00</span>
+    <input class="player__seek" id="playerSeek" type="range" min="0" max="1000" value="0" aria-label="Seek">
+    <span class="player__time" id="playerDur">0:00</span>
+  </div>
+  <button class="player__next" id="playerNext" type="button" aria-label="Next track">Next</button>
+  <audio id="audio" preload="none"></audio>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
