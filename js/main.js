@@ -126,6 +126,8 @@
   }
 
   let visuals = []; // page-scoped visualizers
+  let piles = [];   // page-scoped photo tables (they pulse with the music)
+  let lastBeat = -1;
   const loaderCanvas = $('#loaderCrown');
   const loaderCrown = loaderCanvas ? new Crown(loaderCanvas) : { done: true, draw() {} };
 
@@ -245,6 +247,8 @@
     readLevels(t);
     visuals.forEach(v => v.draw(t));
     if (!loaderCrown.done) loaderCrown.draw(t);
+    const beat = Math.round(audioEnergy * 100) / 100;
+    if (beat !== lastBeat) { piles.forEach(pl => pl.style.setProperty('--beat', beat)); lastBeat = beat; }
     document.documentElement.style.setProperty('--glow', (0.55 + audioEnergy * 0.9).toFixed(3));
     requestAnimationFrame(frame);
   }
@@ -403,11 +407,6 @@
     if (act) { if (act.dataset.lb === 'close') closeLightbox(); else stepLightbox(act.dataset.lb === 'next' ? 1 : -1); }
     else if (e.target === lightbox) closeLightbox();
   });
-  document.addEventListener('click', e => {
-    const shot = e.target.closest('[data-lightbox]');
-    if (!shot) return;
-    openLightbox($$('[data-lightbox] img', shot.parentElement), +shot.dataset.lightbox);
-  });
   addEventListener('keydown', e => {
     if (e.key === 'Escape') { closeMenu(); closeLightbox(); }
     if (!lightbox.hidden && e.key === 'ArrowRight') stepLightbox(1);
@@ -472,6 +471,7 @@
 
     bindMagnetic(main);
     bindRoster(main); bindShows(main); bindTilt(main); bindForms(main); bindClocks(main); bindCrate(main);
+    bindTrail(main); bindPiles(main);
 
     if (animate) {
       ctx = gsap.context(() => {
@@ -490,6 +490,16 @@
           const t = $(trig, main); if (!t) return;
           gsap.from($$(sel, main), { y: 50, opacity: 0, duration: 1.1, stagger: 0.08, ease: 'expo.out', scrollTrigger: { trigger: t, start: 'top 88%', once: true }, ...extra });
         };
+        const zoom = $('.zoom', main);
+        if (zoom) {
+          const narrow = matchMedia('(max-width: 720px)').matches;
+          const tl = gsap.timeline({ scrollTrigger: { trigger: zoom, start: 'top top', end: '+=120%', scrub: 0.6, pin: $('.zoom__pin', zoom) } });
+          tl.fromTo($('.zoom__media', zoom), { clipPath: narrow ? 'inset(26% 14% 26% 14% round 6px)' : 'inset(22% 30% 22% 30% round 6px)' }, { clipPath: 'inset(0% 0% 0% 0% round 0px)', ease: 'power2.inOut' }, 0)
+            .fromTo($('.zoom__media img', zoom), { scale: 1.25 }, { scale: 1, ease: 'power2.out' }, 0)
+            .to($('.zoom__line--l', zoom), { x: () => -innerWidth * 0.35, ease: 'power2.in' }, 0)
+            .to($('.zoom__line--r', zoom), { x: () => innerWidth * 0.35, ease: 'power2.in' }, 0)
+            .to($$('.zoom__line', zoom), { opacity: 0, duration: 0.3 }, 0.55);
+        }
         if (page === 'home') {
           rise('.manifesto__facts > div', '.manifesto__facts');
           rise('.artist-row', '.artist-list');
@@ -504,7 +514,6 @@
           rise('.ap-facts div', '.ap-facts');
           rise('.ap-bio p', '.ap-bio');
           rise('.ap-rec', '.ap-rec-list');
-          rise('.ap-shot', '.ap-shots', { y: 80 });
           rise('.ap-links li', '.ap-links');
           gsap.fromTo('.ap-hero__img img', { yPercent: 0 }, { yPercent: 10, ease: 'none', scrollTrigger: { trigger: '.ap-hero', start: 'top top', end: 'bottom top', scrub: true } });
           gsap.fromTo('.ap-video__frame', { clipPath: 'inset(10% 6% 10% 6%)' }, { clipPath: 'inset(0% 0% 0% 0%)', ease: 'none', scrollTrigger: { trigger: '.ap-video', start: 'top 90%', end: 'top 35%', scrub: true } });
@@ -519,7 +528,7 @@
   function teardownPage() {
     if (ctx) { ctx.revert(); ctx = null; }
     cleanups.forEach(fn => fn()); cleanups = [];
-    visuals.forEach(v => v.destroy()); visuals = [];
+    visuals.forEach(v => v.destroy()); visuals = []; piles = [];
     float.classList.remove('is-on'); peek.classList.remove('is-on');
     stopVideos(); closeLightbox();
   }
@@ -543,6 +552,166 @@
   }
 
   /* ---------- page binders ---------- */
+
+  // Photo trail: pictures drop where the pointer travels.
+  function bindTrail(main) {
+    const zone = $('[data-trail]', main);
+    if (!zone || reduced) return;
+    const layer = $('.trail__layer', zone);
+    const srcs = layer.dataset.images.split(/\s+/).filter(Boolean).map(p => new URL(p, location.href).href);
+    srcs.forEach(src => { const im = new Image(); im.src = src; });
+    let last = null, idx = 0, z = 1;
+    const spawn = (x, y) => {
+      const img = document.createElement('img');
+      img.className = 'trail__img'; img.alt = ''; img.src = srcs[idx++ % srcs.length];
+      img.style.zIndex = z++;
+      layer.appendChild(img);
+      const w = img.offsetWidth || 180, h = w * 1.25, rot = (Math.random() - 0.5) * 18;
+      const at = (dy, sc) => `translate(${x - w / 2}px, ${y - h / 2 + dy}px) rotate(${rot}deg) scale(${sc})`;
+      img.animate([
+        { transform: at(0, 0.3), opacity: 0 },
+        { transform: at(0, 1), opacity: 1, offset: 0.22 },
+        { transform: at(0, 1), opacity: 1, offset: 0.6 },
+        { transform: at(40, 0.8), opacity: 0 },
+      ], { duration: 1400, easing: 'cubic-bezier(.2,.7,.1,1)', fill: 'forwards' }).onfinish = () => img.remove();
+      while (layer.children.length > 16) layer.firstChild.remove();
+    };
+    const point = e => { const r = zone.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+    zone.addEventListener('pointermove', e => {
+      const p = point(e);
+      if (!last || Math.hypot(p.x - last.x, p.y - last.y) > (e.pointerType === 'touch' ? 55 : 95)) { spawn(p.x, p.y); last = p; }
+    });
+    zone.addEventListener('pointerdown', e => { const p = point(e); spawn(p.x, p.y); last = p; });
+    zone.addEventListener('pointerleave', () => { last = null; });
+  }
+
+  // Photo table: prints you can drag, throw, shuffle and tidy.
+  function bindPiles(main) {
+    $$('[data-pile]', main).forEach(pile => {
+      const cards = $$('.pile__card', pile);
+      if (!cards.length) return;
+      piles.push(pile);
+      const st = cards.map(() => ({ x: 0, y: 0, r: 0, s: 1, vx: 0, vy: 0 }));
+      const section = pile.closest('section') || main;
+      const tidyBtn = $('[data-pile-tidy]', section), shuffleBtn = $('[data-pile-shuffle]', section);
+      let top = cards.length, tidy = false, dealt = false;
+
+      const size = i => ({ cw: cards[i].offsetWidth, ch: cards[i].offsetHeight });
+      const apply = i => { const c = st[i]; cards[i].style.transform = `translate3d(${c.x}px, ${c.y}px, 0) rotate(${c.r}deg) scale(${c.s})`; };
+      const scatter = () => cards.map((_, i) => {
+        const { cw, ch } = size(i);
+        return { x: Math.random() * Math.max(0, pile.clientWidth - cw), y: Math.random() * Math.max(0, pile.clientHeight - ch), r: (Math.random() - 0.5) * 26 };
+      });
+      const grid = () => {
+        const { cw, ch } = size(0), gap = 16, W = pile.clientWidth;
+        const colsN = Math.max(2, Math.floor((W + gap) / (cw + gap))), rowsN = Math.ceil(cards.length / colsN);
+        // grow the table so a tidy grid never overlaps
+        pile.style.height = '';
+        const need = rowsN * (ch + gap) - gap;
+        if (need > pile.clientHeight) pile.style.height = `${need}px`;
+        const H = pile.clientHeight;
+        const stepY = ch + gap;
+        const x0 = (W - (colsN * cw + (colsN - 1) * gap)) / 2;
+        const y0 = Math.max(0, (H - ((rowsN - 1) * stepY + ch)) / 2);
+        return cards.map((_, i) => ({ x: x0 + (i % colsN) * (cw + gap), y: y0 + Math.floor(i / colsN) * stepY, r: 0 }));
+      };
+      const moveTo = (targets, stagger = 0.035) => targets.forEach((t, i) => {
+        if (animate) gsap.to(st[i], { ...t, duration: 1, delay: i * stagger, ease: 'expo.out', overwrite: true, onUpdate: () => apply(i) });
+        else { Object.assign(st[i], t); apply(i); }
+      });
+
+      // start stacked in the middle, deal out when the table comes into view
+      cards.forEach((card, i) => {
+        const { cw, ch } = size(i);
+        Object.assign(st[i], { x: (pile.clientWidth - cw) / 2, y: (pile.clientHeight - ch) / 2, r: (Math.random() - 0.5) * 8 });
+        card.style.zIndex = i + 1; apply(i);
+      });
+      const deal = () => { if (dealt) return; dealt = true; moveTo(scatter(), 0.06); };
+      if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { deal(); io.disconnect(); } }, { threshold: 0.3 });
+        io.observe(pile); cleanups.push(() => io.disconnect());
+      } else deal();
+
+      const fling = i => {
+        const c = st[i], card = cards[i];
+        const step = () => {
+          if (card.classList.contains('is-dragging') || !card.isConnected) return;
+          const { cw, ch } = size(i), W = pile.clientWidth, H = pile.clientHeight;
+          c.x += c.vx; c.y += c.vy; c.vx *= 0.93; c.vy *= 0.93;
+          c.r = clamp(c.r + c.vx * 0.25, -40, 40);
+          if (c.x < -cw * 0.25) { c.x = -cw * 0.25; c.vx *= -0.5; }
+          if (c.x > W - cw * 0.75) { c.x = W - cw * 0.75; c.vx *= -0.5; }
+          if (c.y < -ch * 0.15) { c.y = -ch * 0.15; c.vy *= -0.5; }
+          if (c.y > H - ch * 0.6) { c.y = H - ch * 0.6; c.vy *= -0.5; }
+          apply(i);
+          if (Math.hypot(c.vx, c.vy) > 0.15) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+      };
+
+      cards.forEach((card, i) => {
+        let start = null, prev = null, moved = false;
+        card.addEventListener('pointerdown', e => {
+          if (e.button !== 0) return;
+          if (hasGSAP) gsap.killTweensOf(st[i]);
+          card.setPointerCapture(e.pointerId);
+          card.style.zIndex = ++top; card.classList.add('is-dragging');
+          start = { px: e.clientX, py: e.clientY, x: st[i].x, y: st[i].y };
+          prev = { x: e.clientX, y: e.clientY, t: performance.now() };
+          moved = false; st[i].vx = st[i].vy = 0; st[i].s = 1.05; apply(i);
+        });
+        card.addEventListener('pointermove', e => {
+          if (!start) return;
+          const dx = e.clientX - start.px, dy = e.clientY - start.py;
+          if (Math.hypot(dx, dy) > 6) moved = true;
+          const now = performance.now(), dt = Math.max(1, now - prev.t);
+          st[i].vx = lerp(st[i].vx, ((e.clientX - prev.x) / dt) * 16, 0.5);
+          st[i].vy = lerp(st[i].vy, ((e.clientY - prev.y) / dt) * 16, 0.5);
+          prev = { x: e.clientX, y: e.clientY, t: now };
+          const { cw, ch } = size(i);
+          st[i].x = clamp(start.x + dx, -cw * 0.25, pile.clientWidth - cw * 0.75);
+          st[i].y = clamp(start.y + dy, -ch * 0.15, pile.clientHeight - ch * 0.6);
+          st[i].r = lerp(st[i].r, clamp(st[i].vx * 1.6, -22, 22), 0.2);
+          apply(i);
+        });
+        const end = () => {
+          if (!start) return;
+          start = null; card.classList.remove('is-dragging'); st[i].s = 1;
+          card.dataset.moved = moved ? '1' : '';
+          if (moved && !reduced) { if (tidy) { tidy = false; if (tidyBtn) tidyBtn.textContent = 'Tidy up'; } fling(i); } else apply(i);
+        };
+        card.addEventListener('pointerup', end);
+        card.addEventListener('pointercancel', end);
+        card.addEventListener('click', () => {
+          if (card.dataset.moved) { card.dataset.moved = ''; return; }
+          openLightbox($$('img', pile), i);
+        });
+      });
+
+      const untidy = () => { tidy = false; pile.style.height = ''; if (tidyBtn) tidyBtn.textContent = 'Tidy up'; };
+      if (shuffleBtn) shuffleBtn.addEventListener('click', () => {
+        untidy();
+        cards.forEach(c => { c.style.zIndex = Math.ceil(Math.random() * cards.length); });
+        moveTo(scatter());
+      });
+      if (tidyBtn) tidyBtn.addEventListener('click', () => {
+        if (tidy) { untidy(); moveTo(scatter()); }
+        else { tidy = true; tidyBtn.textContent = 'Scatter'; cards.forEach((c, i) => { c.style.zIndex = i + 1; }); moveTo(grid()); }
+        if (hasGSAP) ScrollTrigger.refresh();
+      });
+      const onResize = () => {
+        if (tidy) { moveTo(grid(), 0); return; }
+        cards.forEach((_, i) => {
+          const { cw, ch } = size(i);
+          st[i].x = clamp(st[i].x, -cw * 0.25, pile.clientWidth - cw * 0.75);
+          st[i].y = clamp(st[i].y, -ch * 0.15, pile.clientHeight - ch * 0.6);
+          apply(i);
+        });
+      };
+      addEventListener('resize', onResize);
+      cleanups.push(() => removeEventListener('resize', onResize));
+    });
+  }
   function bindRoster(main) {
     if (!finePointer || reduced) return;
     $$('.artist-row', main).forEach(row => {
@@ -718,6 +887,22 @@
     const raw = a.getAttribute('href');
     if (raw && !raw.startsWith('#') && !/^[a-z]+:/i.test(raw)) a.setAttribute('href', new URL(raw, location.href).href);
   });
+
+  // page tone follows whichever section sits in the middle of the screen
+  if ('IntersectionObserver' in window) {
+    const root = document.documentElement;
+    const tones = new IntersectionObserver(entries => entries.forEach(en => {
+      if (en.isIntersecting) root.dataset.tone = en.target.dataset.tone;
+    }), { rootMargin: '-50% 0px -50% 0px' });
+    const watchTones = () => {
+      tones.disconnect();
+      const first = $('main [data-tone]');
+      root.dataset.tone = first ? first.dataset.tone : 'dark';
+      $$('main [data-tone], footer[data-tone]').forEach(sec => tones.observe(sec));
+    };
+    addEventListener('throne:page', watchTones);
+    watchTones();
+  }
 
   // active section in the nav
   if ('IntersectionObserver' in window) {

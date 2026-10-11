@@ -165,9 +165,11 @@ def build_main(a, nxt):
     facts = "\n".join(f'      <div><dt>{E(k)}</dt><dd>{E(v)}</dd></div>' for k, v in a["facts"])
     bio = "\n".join(f'      <p>{E(p)}</p>' for p in a["bio"])
     records = "\n".join(record_row(i + 1, r) for i, r in enumerate(a["records"]))
+    total = len(a["gallery"])
     gallery = "\n".join(
-        f'      <button class="ap-shot" type="button" data-lightbox="{i}" data-cursor="View">'
-        f'<img src="../assets/img/{src}" alt="{E(alt)}" loading="lazy"></button>'
+        f'      <button class="pile__card" type="button" data-cursor="Drag">'
+        f'<img src="../assets/img/{src}" alt="{E(alt)}" loading="lazy" draggable="false">'
+        f'<span class="pile__cap"><b>{E(name_full)}</b><span>{i + 1:02d} / {total:02d}</span></span></button>'
         for i, (src, alt) in enumerate(a["gallery"]))
     if a["links"]:
         links = "\n".join(f'      <li><a href="{E(h)}" target="_blank" rel="noopener" data-magnetic>{E(l)} <svg><use href="#i-arrow"/></svg></a></li>'
@@ -179,7 +181,7 @@ def build_main(a, nxt):
     nxt_name = " ".join(nxt["name"])
     return f'''<main id="top" data-page="artist" data-title="{E(name_full)}">
 
-  <section class="ap-hero">
+  <section class="ap-hero" data-tone="dark">
     <div class="ap-hero__text">
       <a class="ap-back" href="../#artists" data-magnetic>← The roster</a>
       <p class="eyebrow">{E(a["index"])} · {E(a["role"])}</p>
@@ -196,7 +198,7 @@ def build_main(a, nxt):
     <canvas class="dotstrip" data-dotstrip aria-hidden="true"></canvas>
   </section>
 
-  <section class="ap-about">
+  <section class="ap-about" data-tone="light">
     <p class="ap-statement" data-scrub>{E(a["statement"])}</p>
     <div class="ap-about__grid">
       <dl class="ap-facts">
@@ -208,7 +210,7 @@ def build_main(a, nxt):
     </div>
   </section>
 
-  <section class="ap-records">
+  <section class="ap-records" data-tone="light">
     <div class="section-head">
       <h2 class="section-title" data-split>Records</h2>
       <p class="section-note">{len(a["records"])} {"release" if len(a["records"]) == 1 else "releases"}. Play here or watch on YouTube.</p>
@@ -218,7 +220,7 @@ def build_main(a, nxt):
     </ol>
   </section>
 
-  <section class="ap-video">
+  <section class="ap-video" data-tone="dark">
     <p class="eyebrow">Watch</p>
     <div class="ap-video__frame" data-video="{v["id"]}" data-video-title="{E(v["title"])}">
       <img src="../assets/img/{v["poster"]}" alt="">
@@ -229,22 +231,27 @@ def build_main(a, nxt):
     </div>
   </section>
 
-  <section class="ap-gallery">
+  <section class="ap-gallery" data-tone="light">
     <div class="section-head">
       <h2 class="section-title" data-split>In frame</h2>
-      <p class="section-note">Tap a photo to open it.</p>
+      <p class="section-note">Grab a photo and throw it. Tap one to see it full size.</p>
     </div>
-    <div class="ap-shots ap-shots--{len(a["gallery"])}">
+    <div class="pile pile--small" data-pile>
 {gallery}
+    </div>
+    <div class="pile__tools">
+      <button class="btn btn--ghost" type="button" data-pile-shuffle data-magnetic>Shuffle</button>
+      <button class="btn btn--ghost" type="button" data-pile-tidy data-magnetic>Tidy up</button>
+      <span class="pile__count">{total:02d} photos</span>
     </div>
   </section>
 
-  <section class="ap-connect">
+  <section class="ap-connect" data-tone="light">
     <h2 class="ap-connect__title" data-split>Follow {E(a["name"][0])}</h2>
 {links_html}
   </section>
 
-  <a class="ap-next" href="{nxt["slug"]}.html" data-cursor="Next">
+  <a class="ap-next" href="{nxt["slug"]}.html" data-cursor="Next" data-tone="dark">
     <span class="eyebrow">Next artist</span>
     <span class="ap-next__name">{E(nxt_name)}</span>
     <span class="ap-next__img"><img src="../assets/img/{nxt["portrait"]}" alt=""></span>

@@ -72,6 +72,10 @@ out to lnk.to, slide-up reveals, a "fly" hover lift, minimal footer.
 | Hero | The crown is a live **audio visualizer**: press play and its columns react to the track's frequencies (bass in the centre spike). Dots also push away from the cursor. |
 | Persistent player | Music plays on-site in a bottom bar that survives scrolling (play/pause, seek, next, Media Session metadata). Mavin always sends you off-site. |
 | Manifesto | Words light up as you scroll through them; key words turn gold. |
+| Light + dark | Sections alternate between the black stage and warm paper (`data-tone`), and the page fades between them as you scroll. Player, menu and overlays always stay black. |
+| Photo trail | Moving the cursor (or dragging a finger) across "Dreamers. Believers. Truth-tellers. Ground shakers." drops a trail of artist photos. |
+| Zoom | A studio shot grows from a small card to full screen as you scroll, with the words pulling apart. |
+| Photo table | Polaroid prints you can drag and throw (with inertia and bounce), Shuffle or Tidy into a grid; tap opens full screen; they pulse to the music. Also on every artist page. |
 | Roster | Giant names; hover fills the row gold, rolls the name, and a portrait follows the cursor. Click opens the artist's page. Mobile shows inline thumbnails. |
 | New music | A pinned horizontal "crate" on desktop (scroll moves records sideways, skewing with velocity); swipe on touch. Hover slides the vinyl out of the sleeve; the playing record spins. |
 | Featured | Big God SZN with a spinning disc that parallaxes out from behind the cover. |

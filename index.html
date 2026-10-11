@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-tone="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -97,7 +97,7 @@
 <main id="top">
 
   <!-- ============ HERO ============ -->
-  <section class="hero" aria-label="Throne Records">
+  <section class="hero" aria-label="Throne Records" data-tone="dark">
     <div class="hero__stage">
       <canvas class="hero__crown" id="heroCrown" aria-hidden="true"></canvas>
       <h1 class="hero__word" aria-label="Throne">
@@ -128,7 +128,7 @@
   </section>
 
   <!-- ============ MANIFESTO ============ -->
-  <section class="manifesto" id="about">
+  <section class="manifesto" id="about" data-tone="light">
     <p class="eyebrow">About the label</p>
     <p class="manifesto__text" data-scrub>Powered by our legacy, it’s time to build a new generation of believers, straight-shooters and storytellers. Our artists redefine genres. Our artists define generations. Our artists change the world.</p>
     <div class="manifesto__facts">
@@ -138,8 +138,21 @@
     </div>
   </section>
 
+  <!-- ============ TRAIL ============ -->
+  <section class="trail" data-tone="light" data-trail aria-label="Who Throne Records is for">
+    <p class="eyebrow trail__hint"><span class="hint-desktop">Move your cursor across the words</span><span class="hint-touch">Drag your finger across the words</span></p>
+    <h2 class="trail__words">
+      <span>Dreamers.</span>
+      <span>Believers.</span>
+      <span>Truth-tellers.</span>
+      <span>Ground shakers.</span>
+    </h2>
+    <div class="trail__layer" aria-hidden="true"
+      data-images="assets/img/featured_fet1_1.jpg assets/img/portfolio_kid22.jpg assets/img/artist_lil_case.jpg assets/img/artist_bros.jpg assets/img/featured_fet_kid1.jpg assets/img/banner_b2.jpg assets/img/featured_fet1_2.jpg assets/img/artist_kid11.jpg assets/img/portfolio_lil_case.jpg assets/img/event_big1.jpg assets/img/cloths_product1.jpg"></div>
+  </section>
+
   <!-- ============ ARTISTS ============ -->
-  <section class="artists" id="artists">
+  <section class="artists" id="artists" data-tone="dark">
     <div class="section-head">
       <h2 class="section-title" data-split>The roster</h2>
       <p class="section-note">Three voices, one crown. Pick a name.</p>
@@ -174,8 +187,19 @@
   </section>
 
 
+  <!-- ============ ZOOM ============ -->
+  <section class="zoom" data-tone="dark" aria-label="Behind the throne">
+    <div class="zoom__pin">
+      <div class="zoom__media"><img src="assets/img/banner_b2.jpg" alt="Bros Throne on the phone in a dim studio"></div>
+      <p class="zoom__line zoom__line--l" aria-hidden="true">Home of</p>
+      <p class="zoom__line zoom__line--r" aria-hidden="true">the believers</p>
+      <p class="sr-only">Home of the believers</p>
+      <p class="zoom__cap">Behind the throne · the studio</p>
+    </div>
+  </section>
+
   <!-- ============ MUSIC ============ -->
-  <section class="music" id="music">
+  <section class="music" id="music" data-tone="light">
     <div class="music__pin">
       <div class="section-head section-head--music">
         <h2 class="section-title" data-split>New music</h2>
@@ -288,7 +312,7 @@
   </section>
 
   <!-- ============ FEATURED ============ -->
-  <section class="feature" aria-labelledby="featureTitle">
+  <section class="feature" aria-labelledby="featureTitle" data-tone="dark">
     <div class="feature__art">
       <div class="feature__disc" aria-hidden="true"><span style="background-image:url(assets/img/event_big1.jpg)"></span></div>
       <img class="feature__cover" src="assets/img/event_big1.jpg" alt="Big God SZN cover art">
@@ -309,8 +333,63 @@
     </div>
   </section>
 
+  <!-- ============ PHOTO TABLE ============ -->
+  <section class="table" id="photos" data-tone="light">
+    <div class="section-head">
+      <h2 class="section-title" data-split>Off the record</h2>
+      <p class="section-note">Grab a photo and throw it. Tap one to see it full size. Press play and the table moves with the music.</p>
+    </div>
+    <div class="pile" data-pile>
+      <button class="pile__card" type="button" data-cursor="Drag">
+        <img src="assets/img/featured_fet1_1.jpg" alt="Bros Throne, Pinstripes" loading="lazy" draggable="false">
+        <span class="pile__cap"><b>Bros Throne</b><span>Pinstripes</span></span>
+      </button>
+      <button class="pile__card" type="button" data-cursor="Drag">
+        <img src="assets/img/artist_lil_case.jpg" alt="Lilcase, The armchair" loading="lazy" draggable="false">
+        <span class="pile__cap"><b>Lilcase</b><span>The armchair</span></span>
+      </button>
+      <button class="pile__card" type="button" data-cursor="Drag">
+        <img src="assets/img/event_big1.jpg" alt="Big God SZN, Cover art" loading="lazy" draggable="false">
+        <span class="pile__cap"><b>Big God SZN</b><span>Cover art</span></span>
+      </button>
+      <button class="pile__card" type="button" data-cursor="Drag">
+        <img src="assets/img/portfolio_kid22.jpg" alt="Kidd Carder, Varsity" loading="lazy" draggable="false">
+        <span class="pile__cap"><b>Kidd Carder</b><span>Varsity</span></span>
+      </button>
+      <button class="pile__card" type="button" data-cursor="Drag">
+        <img src="assets/img/artist_bros.jpg" alt="Bros Throne, Live" loading="lazy" draggable="false">
+        <span class="pile__cap"><b>Bros Throne</b><span>Live</span></span>
+      </button>
+      <button class="pile__card" type="button" data-cursor="Drag">
+        <img src="assets/img/banner_b2.jpg" alt="Bros Throne, Studio call" loading="lazy" draggable="false">
+        <span class="pile__cap"><b>Bros Throne</b><span>Studio call</span></span>
+      </button>
+      <button class="pile__card" type="button" data-cursor="Drag">
+        <img src="assets/img/artist_kid11.jpg" alt="Kidd Carder, Camo" loading="lazy" draggable="false">
+        <span class="pile__cap"><b>Kidd Carder</b><span>Camo</span></span>
+      </button>
+      <button class="pile__card" type="button" data-cursor="Drag">
+        <img src="assets/img/event_blaq_event1.jpg" alt="ASAP ft. Blaq Bonez, Single art" loading="lazy" draggable="false">
+        <span class="pile__cap"><b>ASAP ft. Blaq Bonez</b><span>Single art</span></span>
+      </button>
+      <button class="pile__card" type="button" data-cursor="Drag">
+        <img src="assets/img/featured_fet1_2.jpg" alt="Bros Throne, Black & white" loading="lazy" draggable="false">
+        <span class="pile__cap"><b>Bros Throne</b><span>Black & white</span></span>
+      </button>
+      <button class="pile__card" type="button" data-cursor="Drag">
+        <img src="assets/img/cloths_product1.jpg" alt="Throne Wear, Look 01" loading="lazy" draggable="false">
+        <span class="pile__cap"><b>Throne Wear</b><span>Look 01</span></span>
+      </button>
+    </div>
+    <div class="pile__tools">
+      <button class="btn btn--ghost" type="button" data-pile-shuffle data-magnetic>Shuffle</button>
+      <button class="btn btn--ghost" type="button" data-pile-tidy data-magnetic>Tidy up</button>
+      <span class="pile__count">10 photos</span>
+    </div>
+  </section>
+
   <!-- ============ SHOWS ============ -->
-  <section class="shows" id="shows">
+  <section class="shows" id="shows" data-tone="dark">
     <div class="section-head">
       <h2 class="section-title" data-split>Shows &amp; drops</h2>
       <p class="section-note">2026 dates to be announced. The archive so far:</p>
@@ -338,7 +417,7 @@
   </section>
 
   <!-- ============ WEAR ============ -->
-  <section class="wear" id="wear">
+  <section class="wear" id="wear" data-tone="light">
     <div class="wear__intro">
       <p class="eyebrow">Throne Wear</p>
       <h2 class="section-title" data-split>Dress like the crown</h2>
@@ -363,14 +442,14 @@
   </section>
 
   <!-- ============ CITIES ============ -->
-  <section class="cities" aria-label="Where we are">
+  <section class="cities" aria-label="Where we are" data-tone="light">
     <div class="city"><span class="city__name">Lagos</span><span class="city__time" data-tz="Africa/Lagos">--:--</span><span class="city__note">Roots · Edo &amp; Lagos, NG</span></div>
     <div class="city"><span class="city__name">Moscow</span><span class="city__time" data-tz="Europe/Moscow">--:--</span><span class="city__note">Studio &amp; shows, RU</span></div>
     <div class="city"><span class="city__name">London</span><span class="city__time" data-tz="Europe/London">--:--</span><span class="city__note">Label office, UK</span></div>
   </section>
 
   <!-- ============ CONTACT ============ -->
-  <section class="contact" id="contact">
+  <section class="contact" id="contact" data-tone="dark">
     <div class="contact__head">
       <h2 class="contact__title" data-split>Pull up a chair.</h2>
       <p class="contact__text">Bookings, features, press, or a demo you believe in. Tell us what you’ve got.</p>
@@ -401,7 +480,7 @@
 </main>
 
 <!-- ============ FOOTER ============ -->
-<footer class="footer">
+<footer class="footer" data-tone="dark">
   <div class="footer__top">
     <ul class="socials">
       <li><a href="https://www.instagram.com/brosthrone" target="_blank" rel="noopener" data-magnetic>Instagram</a></li>

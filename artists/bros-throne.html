@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-tone="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -96,7 +96,7 @@
 
 <main id="top" data-page="artist" data-title="Bros Throne">
 
-  <section class="ap-hero">
+  <section class="ap-hero" data-tone="dark">
     <div class="ap-hero__text">
       <a class="ap-back" href="../#artists" data-magnetic>← The roster</a>
       <p class="eyebrow">A/01 · Artist · Founder &amp; CEO</p>
@@ -113,7 +113,7 @@
     <canvas class="dotstrip" data-dotstrip aria-hidden="true"></canvas>
   </section>
 
-  <section class="ap-about">
+  <section class="ap-about" data-tone="light">
     <p class="ap-statement" data-scrub>Times were changing. Clothes were changing. Morals were changing. Big God SZN never changed.</p>
     <div class="ap-about__grid">
       <dl class="ap-facts">
@@ -130,7 +130,7 @@
     </div>
   </section>
 
-  <section class="ap-records">
+  <section class="ap-records" data-tone="light">
     <div class="section-head">
       <h2 class="section-title" data-split>Records</h2>
       <p class="section-note">10 releases. Play here or watch on YouTube.</p>
@@ -149,7 +149,7 @@
     </ol>
   </section>
 
-  <section class="ap-video">
+  <section class="ap-video" data-tone="dark">
     <p class="eyebrow">Watch</p>
     <div class="ap-video__frame" data-video="3StHfn7EThA" data-video-title="Big God (feat. Lilcase)">
       <img src="../assets/img/event_big1.jpg" alt="">
@@ -160,21 +160,26 @@
     </div>
   </section>
 
-  <section class="ap-gallery">
+  <section class="ap-gallery" data-tone="light">
     <div class="section-head">
       <h2 class="section-title" data-split>In frame</h2>
-      <p class="section-note">Tap a photo to open it.</p>
+      <p class="section-note">Grab a photo and throw it. Tap one to see it full size.</p>
     </div>
-    <div class="ap-shots ap-shots--5">
-      <button class="ap-shot" type="button" data-lightbox="0" data-cursor="View"><img src="../assets/img/featured_fet1_2.jpg" alt="Bros Throne in a pinstripe suit, black and white" loading="lazy"></button>
-      <button class="ap-shot" type="button" data-lightbox="1" data-cursor="View"><img src="../assets/img/artist_bros.jpg" alt="Bros Throne performing live" loading="lazy"></button>
-      <button class="ap-shot" type="button" data-lightbox="2" data-cursor="View"><img src="../assets/img/banner_b2.jpg" alt="Bros Throne on the phone in the studio" loading="lazy"></button>
-      <button class="ap-shot" type="button" data-lightbox="3" data-cursor="View"><img src="../assets/img/featured_fet1_1.jpg" alt="Bros Throne portrait" loading="lazy"></button>
-      <button class="ap-shot" type="button" data-lightbox="4" data-cursor="View"><img src="../assets/img/cloths_product2.jpg" alt="Bros Throne on stage" loading="lazy"></button>
+    <div class="pile pile--small" data-pile>
+      <button class="pile__card" type="button" data-cursor="Drag"><img src="../assets/img/featured_fet1_2.jpg" alt="Bros Throne in a pinstripe suit, black and white" loading="lazy" draggable="false"><span class="pile__cap"><b>Bros Throne</b><span>01 / 05</span></span></button>
+      <button class="pile__card" type="button" data-cursor="Drag"><img src="../assets/img/artist_bros.jpg" alt="Bros Throne performing live" loading="lazy" draggable="false"><span class="pile__cap"><b>Bros Throne</b><span>02 / 05</span></span></button>
+      <button class="pile__card" type="button" data-cursor="Drag"><img src="../assets/img/banner_b2.jpg" alt="Bros Throne on the phone in the studio" loading="lazy" draggable="false"><span class="pile__cap"><b>Bros Throne</b><span>03 / 05</span></span></button>
+      <button class="pile__card" type="button" data-cursor="Drag"><img src="../assets/img/featured_fet1_1.jpg" alt="Bros Throne portrait" loading="lazy" draggable="false"><span class="pile__cap"><b>Bros Throne</b><span>04 / 05</span></span></button>
+      <button class="pile__card" type="button" data-cursor="Drag"><img src="../assets/img/cloths_product2.jpg" alt="Bros Throne on stage" loading="lazy" draggable="false"><span class="pile__cap"><b>Bros Throne</b><span>05 / 05</span></span></button>
+    </div>
+    <div class="pile__tools">
+      <button class="btn btn--ghost" type="button" data-pile-shuffle data-magnetic>Shuffle</button>
+      <button class="btn btn--ghost" type="button" data-pile-tidy data-magnetic>Tidy up</button>
+      <span class="pile__count">05 photos</span>
     </div>
   </section>
 
-  <section class="ap-connect">
+  <section class="ap-connect" data-tone="light">
     <h2 class="ap-connect__title" data-split>Follow Bros</h2>
     <ul class="ap-links">
       <li><a href="https://www.instagram.com/brosthrone" target="_blank" rel="noopener" data-magnetic>Instagram <svg><use href="#i-arrow"/></svg></a></li>
@@ -185,7 +190,7 @@
     </ul>
   </section>
 
-  <a class="ap-next" href="kidd-carder.html" data-cursor="Next">
+  <a class="ap-next" href="kidd-carder.html" data-cursor="Next" data-tone="dark">
     <span class="eyebrow">Next artist</span>
     <span class="ap-next__name">Kidd Carder</span>
     <span class="ap-next__img"><img src="../assets/img/portfolio_kid22.jpg" alt=""></span>
@@ -193,7 +198,7 @@
 </main>
 
 <!-- ============ FOOTER ============ -->
-<footer class="footer">
+<footer class="footer" data-tone="dark">
   <div class="footer__top">
     <ul class="socials">
       <li><a href="https://www.instagram.com/brosthrone" target="_blank" rel="noopener" data-magnetic>Instagram</a></li>
