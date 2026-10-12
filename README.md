@@ -20,10 +20,10 @@ assets/audio      How Far + Jesu (from the current site)
 
 Libraries (CDN): GSAP 3.12.5 + ScrollTrigger, Lenis 1.1.13.
 
-Type (Google Fonts): **Grenze Gotisch**, a contemporary blackletter, for names and
-headlines — it speaks to gospel, royalty and streetwear at once. **Archivo** does
-everything else in three widths: regular for body, condensed + heavy for big statements
-and numbers, expanded for small labels. Blackletter is set in sentence case only.
+Type (Google Fonts): **Anybody**, a variable-width grotesk set extra-wide and heavy in
+capitals, for headlines and names — the energy of Afrobeats cover art and merch drops.
+**Archivo** does everything else in three widths: regular for body, condensed + heavy for
+numbers and clocks, expanded for small labels.
 
 ## Live site
 

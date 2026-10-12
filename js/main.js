@@ -634,7 +634,7 @@
         } else if (page === 'shows') {
           rise('.chip', '.chips', { y: 20 });
           rise('.arc', '.arc-list');
-          rise('.ticket-wrap', '.ticket-wrap', { y: 80 });
+          rise('.ticket-wrap', '.request', { y: 80 });
         } else if (page === 'contact') {
           rise('.direct li', '.direct', { y: 24 });
           rise('.desk-tab', '.desk-tabs', { y: 30 });
