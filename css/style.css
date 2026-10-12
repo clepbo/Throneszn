@@ -98,29 +98,36 @@ body::after {
 .loader__count { color: var(--accent); font-variant-numeric: tabular-nums; }
 .loader.is-done { pointer-events: none; }
 
-/* ---------- cursor: a little crown ---------- */
+/* ---------- cursor: a crown that grows into a gold bubble ---------- */
 .cursor {
   position: fixed; top: 0; left: 0; z-index: 150; pointer-events: none; width: 0; height: 0;
   opacity: 0; transition: opacity .25s;
 }
 .cursor.is-on { opacity: 1; }
+/* the bubble behind the crown: hidden at rest, a ring over links, a gold disc with a label over media */
+.cursor__disc {
+  position: absolute; left: 0; top: 0; width: 84px; height: 84px; margin: -42px 0 0 -42px; border-radius: 50%;
+  background: var(--gold); transform: scale(0); transition: transform .45s var(--ease), background .3s, box-shadow .3s;
+}
+.cursor.is-link .cursor__disc { transform: scale(.52); background: transparent; box-shadow: inset 0 0 0 2px var(--gold); }
+.cursor.has-label .cursor__disc { transform: scale(1); background: var(--gold); box-shadow: 0 10px 30px -10px rgba(0, 0, 0, .5); }
+.cursor.is-down .cursor__disc { transform: scale(.85); }
+.cursor.is-link.is-down .cursor__disc { transform: scale(.42); }
 .cursor__crown {
   position: absolute; left: -14px; top: -9px; width: 28px; height: 17px; color: var(--gold);
   filter: drop-shadow(0 0 1px #0c0b09) drop-shadow(0 2px 3px rgba(0, 0, 0, .45));
-  transform: rotate(var(--tilt, 0deg)) scale(var(--crown-s, 1)); transform-origin: 50% 80%;
-  transition: transform .35s var(--ease), color .25s;
+  transform: translateY(var(--crown-y, 0)) rotate(var(--tilt, 0deg)) scale(var(--crown-s, 1)); transform-origin: 50% 80%;
+  transition: transform .4s var(--ease), color .25s, filter .25s;
 }
-.cursor.is-link { --crown-s: 1.45; }
-.cursor.is-link .cursor__crown { color: #f6cf7c; }
-.cursor.is-down { --crown-s: .85; }
+.cursor.is-link { --crown-s: 1.1; }
+.cursor.has-label { --crown-s: .9; --crown-y: -14px; }
+.cursor.has-label .cursor__crown { color: var(--on-gold); filter: none; }
 .cursor__label {
-  position: absolute; left: 0; top: 16px; transform: translate(-50%, 6px); white-space: nowrap;
-  padding: 7px 11px; border-radius: 999px; background: var(--gold); color: var(--on-gold);
-  font: 600 expanded 10px/1 var(--f-label); letter-spacing: .12em; text-transform: uppercase;
-  box-shadow: 0 6px 16px -6px rgba(0, 0, 0, .5); opacity: 0; transition: opacity .2s, transform .3s var(--ease);
+  position: absolute; left: 0; top: 6px; transform: translate(-50%, 6px) scale(.8); white-space: nowrap; color: var(--on-gold);
+  font: 600 expanded 10px/1 var(--f-label); letter-spacing: .14em; text-transform: uppercase;
+  opacity: 0; transition: opacity .2s, transform .35s var(--ease);
 }
-.cursor.has-label { --crown-s: 1.3; }
-.cursor.has-label .cursor__label { opacity: 1; transform: translate(-50%, 0); }
+.cursor.has-label .cursor__label { opacity: 1; transform: translate(-50%, 0) scale(1); }
 @media (hover: none), (pointer: coarse) { .cursor, .artist-float { display: none !important; } }
 @media (hover: hover) and (pointer: fine) { body.has-cursor, body.has-cursor a, body.has-cursor button { cursor: none; } }
 
@@ -465,7 +472,7 @@ body.is-playing .now-chip__art { animation: spin 6s linear infinite; }
 .footer__word {
   margin: clamp(24px, 5vw, 56px) 0 0; font: 800 clamp(80px, 31vw, 560px)/0.98 var(--f-display); text-align: center; letter-spacing: .01em;
   color: transparent; -webkit-text-stroke: 1px var(--gold-deep);
-  background: radial-gradient(circle at var(--fx, 50%) var(--fy, 50%), var(--gold) 0, var(--gold) 12%, transparent 26%); -webkit-background-clip: text; background-clip: text;
+  background: radial-gradient(circle at var(--fx, 50%) var(--fy, 50%), #fff1c9 0, var(--gold) 14%, color-mix(in srgb, var(--gold) 40%, transparent) 26%, transparent 38%); -webkit-background-clip: text; background-clip: text;
 }
 .footer__base { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-top: 24px; color: var(--mute); font: 600 expanded 11px/1 var(--f-label); letter-spacing: .12em; text-transform: uppercase; }
 
