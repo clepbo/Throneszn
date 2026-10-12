@@ -32,6 +32,31 @@ const check = (name, ok, extra='') => { console.log((ok?'ok   ':'FAIL ')+name+(e
   const pins0 = await ev(() => (() => window.ScrollTrigger ? ScrollTrigger.getAll().filter(t => t.pin).map(t => { const el = t.trigger; const top = el.getBoundingClientRect().top + scrollY; return { name: (el.className||'').toString().split(' ')[0], off: Math.round(t.start - top) }; }) : [])());
   check('pinned sections start exactly at their section', pins0.length > 0 && pins0.every(x => Math.abs(x.off) <= 2), JSON.stringify(pins0));
   check('hero crown canvas is drawn', await ev(() => { const c=document.getElementById('heroCrown'); const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data; let n=0; for(let i=3;i<d.length;i+=4) if(d[i]) n++; return n>1000; }));
+  // Listen dropdown
+  await tap('#listenBtn'); await p.waitForTimeout(700);
+  check('Listen opens a track list', await ev(() => !document.getElementById('listenPanel').hidden && document.getElementById('listenBtn').getAttribute('aria-expanded')==='true' && document.querySelectorAll('.listen__item').length >= 5));
+  check('focus moves into the list', await ev(() => document.getElementById('listenPanel').contains(document.activeElement)));
+  await tap('.listen__item[data-play="jesu"]'); await p.waitForTimeout(900);
+  check('picking Jesu plays it and marks it current', await playing() && await ev(() => document.getElementById('playerTitle').textContent==='Jesu' && document.querySelector('.listen__item[data-play="jesu"]').classList.contains('is-current')));
+  check('track durations load', await ev(() => /\d:\d\d/.test(document.querySelector('[data-dur="how-far"]').textContent)));
+  if (!mobile) { await p.keyboard.press('ArrowDown'); check('arrow keys move through the list', await ev(() => document.activeElement.classList.contains('listen__item') && document.activeElement.dataset.play !== 'jesu')); }
+  await p.keyboard.press('Escape'); await p.waitForTimeout(200);
+  check('Escape closes the list', await ev(() => document.getElementById('listenPanel').hidden));
+  if (!mobile) check('…and returns focus to Listen', await ev(() => document.activeElement.id==='listenBtn'));
+  await tap('#listenBtn'); await p.waitForTimeout(400);
+  await tap('.hero__lede'); await p.waitForTimeout(300);
+  check('clicking outside closes the list', await ev(() => document.getElementById('listenPanel').hidden));
+  await ev(() => document.getElementById('audio').pause()); await ev(() => document.querySelector('[data-play="how-far"]') && 0);
+  if (!mobile) {
+    await p.mouse.move(400, 400); await p.waitForTimeout(400);
+    check('crown cursor follows the pointer', await ev(() => { const c=document.getElementById('cursor'); const r=c.getBoundingClientRect(); return c.classList.contains('is-on') && !!c.querySelector('.cursor__crown') && Math.abs(r.left-400)<30 && Math.abs(r.top-400)<30; }));
+    const nb = await p.locator('#listenBtn').boundingBox(); await p.mouse.move(nb.x+nb.width/2, nb.y+nb.height/2); await p.waitForTimeout(400);
+    check('crown grows over links', await ev(() => document.getElementById('cursor').classList.contains('is-link')));
+    check('native cursor hidden', await ev(() => getComputedStyle(document.body).cursor==='none'));
+  }
+  await ev(() => { const a=document.getElementById('audio'); a.src=''; }); 
+  await ev(() => window.__reload = true);
+  await p.reload({ waitUntil:'networkidle' }); await p.waitForTimeout(3300);
   await tap('.now-chip'); await p.waitForTimeout(1200);
   check('now-chip starts How Far', await playing());
   check('player shows pause + live state', await ev(() => document.body.classList.contains('is-playing') && document.querySelector('#playerIcon use').getAttribute('href')==='#i-pause'));

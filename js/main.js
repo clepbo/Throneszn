@@ -243,6 +243,12 @@
     document.body.classList.toggle('is-playing', playing);
     $('#playerIcon use').setAttribute('href', playing ? '#i-pause' : '#i-play');
     $('#playerToggle').setAttribute('aria-label', playing ? 'Pause' : 'Play');
+    $$('.listen__item[data-play]').forEach(el => {
+      const on = !!current && el.dataset.play === current.id;
+      el.classList.toggle('is-current', on);
+      const u = $('.listen__state use', el); if (u) u.setAttribute('href', on && playing ? '#i-pause' : '#i-play');
+      el.setAttribute('aria-label', `${on && playing ? 'Pause' : 'Play'} ${$('b', el).textContent}`);
+    });
     $$('main [data-play]').forEach(el => {
       const on = !!current && el.dataset.play === current.id;
       const host = el.closest('.record, .ap-rec');
@@ -370,6 +376,37 @@
   }
   burger.addEventListener('click', () => (menu.hidden ? openMenu() : closeMenu()));
 
+  // Listen dropdown: every track in one place
+  const listen = $('#listen'), listenBtn = $('#listenBtn'), listenPanel = $('#listenPanel');
+  const listenItems = () => $$('.listen__item', listenPanel);
+  let durationsLoaded = false;
+  function openListen() {
+    listenPanel.hidden = false; listenBtn.setAttribute('aria-expanded', 'true');
+    const items = listenItems(); const cur = items.find(i => i.classList.contains('is-current')) || items[0];
+    cur.focus({ preventScroll: true });
+    if (!durationsLoaded) {
+      durationsLoaded = true;
+      TRACKS.forEach(t => {
+        const probe = new Audio(); probe.preload = 'metadata'; probe.src = t.src;
+        probe.addEventListener('loadedmetadata', () => { const d = $(`[data-dur="${t.id}"]`, listenPanel); if (d) d.textContent = fmt(probe.duration); });
+      });
+    }
+  }
+  function closeListen(refocus) {
+    if (listenPanel.hidden) return;
+    listenPanel.hidden = true; listenBtn.setAttribute('aria-expanded', 'false');
+    if (refocus) listenBtn.focus();
+  }
+  listenBtn.addEventListener('click', () => (listenPanel.hidden ? openListen() : closeListen()));
+  document.addEventListener('pointerdown', e => { if (!listen.contains(e.target)) closeListen(); });
+  listen.addEventListener('focusout', e => { if (!listen.contains(e.relatedTarget)) closeListen(); });
+  listenPanel.addEventListener('keydown', e => {
+    const items = listenItems(), i = items.indexOf(document.activeElement);
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); items[(i + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length].focus(); }
+    if (e.key === 'Escape') { e.stopPropagation(); closeListen(true); }
+  });
+  listenPanel.addEventListener('click', e => { if (e.target.closest('a.listen__item')) closeListen(); });
+
   /* =====================================================================
      CURSOR, MAGNETIC, FOLLOWERS
      ===================================================================== */
@@ -379,9 +416,15 @@
   if (finePointer && !reduced) {
     document.body.classList.add('has-cursor');
     const c = { x: innerWidth / 2, y: innerHeight / 2 }, f = { ...c }, p = { ...c };
+    let tilt = 0;
+    addEventListener('pointerdown', () => cursor.classList.add('is-down'));
+    addEventListener('pointerup', () => cursor.classList.remove('is-down'));
     const loop = () => {
-      c.x = lerp(c.x, pointer.x, 0.22); c.y = lerp(c.y, pointer.y, 0.22);
+      const vx = pointer.x - c.x;
+      c.x = lerp(c.x, pointer.x, 0.3); c.y = lerp(c.y, pointer.y, 0.3);
       cursor.style.transform = `translate3d(${c.x}px, ${c.y}px, 0)`;
+      tilt = lerp(tilt, clamp(vx * 0.6, -28, 28), 0.15);
+      cursor.style.setProperty('--tilt', `${tilt.toFixed(2)}deg`);
       f.x = lerp(f.x, pointer.x, 0.12); f.y = lerp(f.y, pointer.y, 0.12);
       float.style.transform = `translate3d(${f.x - float.offsetWidth / 2}px, ${f.y - float.offsetHeight / 2}px, 0) rotate(${clamp((pointer.x - f.x) * 0.05, -8, 8)}deg)`;
       p.x = lerp(p.x, pointer.x + 40, 0.16); p.y = lerp(p.y, pointer.y - 110, 0.16);
@@ -571,7 +614,7 @@
         const zoom = $('.zoom', main);
         if (zoom) {
           const narrow = matchMedia('(max-width: 720px)').matches;
-          const tl = gsap.timeline({ scrollTrigger: { trigger: zoom, start: 'top top', end: '+=120%', scrub: 0.6, pin: $('.zoom__pin', zoom) } });
+          const tl = gsap.timeline({ scrollTrigger: { trigger: zoom, start: 'top top', end: '+=120%', scrub: 0.6, pin: $('.zoom__pin', zoom), refreshPriority: 2 } });
           tl.fromTo($('.zoom__media', zoom), { clipPath: narrow ? 'inset(26% 14% 26% 14% round 6px)' : 'inset(22% 30% 22% 30% round 6px)' }, { clipPath: 'inset(0% 0% 0% 0% round 0px)', ease: 'power2.inOut' }, 0)
             .fromTo($('.zoom__media img', zoom), { scale: 1.25 }, { scale: 1, ease: 'power2.out' }, 0)
             .to($('.zoom__line--l', zoom), { x: () => -innerWidth * 0.35, ease: 'power2.in' }, 0)
@@ -612,8 +655,8 @@
         }
       }, main);
     }
-    // pinned sections are measured top to bottom: the crate's pin is created after the zoom
-    // pin above it, then every trigger is re-sorted by position and re-measured
+    // pinned sections are measured first (refreshPriority, top to bottom) so every trigger after
+    // them sees the extra scroll length they add; then all triggers are re-sorted and re-measured
     bindCrate(main);
     if (hasGSAP) { ScrollTrigger.sort(); ScrollTrigger.refresh(); }
     syncUI();
@@ -1189,7 +1232,7 @@
       const tween = gsap.to(track, {
         x: () => -dist(), ease: 'none',
         scrollTrigger: {
-          trigger: $('.music__pin', main), pin: true, start: 'top top', end: () => `+=${dist()}`, scrub: 0.6, invalidateOnRefresh: true,
+          trigger: $('.music__pin', main), pin: true, start: 'top top', end: () => `+=${dist()}`, scrub: 0.6, invalidateOnRefresh: true, refreshPriority: 1,
           onUpdate: self => setCount(Math.min(records.length - 1, Math.floor(self.progress * records.length))),
         },
       });

@@ -30,24 +30,27 @@ ARTISTS = [
         "role": "Artist · Founder & CEO",
         "portrait": "portfolio_bros_throne.jpg",
         "hero": "featured_fet1_1.jpg",
-        "lede": "Edo-born, Russia-based, and the founder of Throne Records. Bros Throne moves between Afrobeats bounce and ghetto gospel testimony.",
+        "lede": "Born in Benin City, based in Russia, founder of Throne Records, and self-styled “Knight of Afrobeat”. Bros Throne moves between Afrobeats bounce and ghetto gospel testimony.",
         "play": {"id": "how-far", "label": "Play How Far"},
         "facts": [
             ("Real name", "Ogbe Japhet"),
-            ("From", "Edo State, Nigeria"),
+            ("Born", "Benin City, Edo State, Nigeria"),
+            ("Known as", "The Knight of Afrobeat"),
+            ("Grew up on", "Fela Kuti, highlife, juju"),
             ("Based", "Russia"),
             ("Role", "Founder & CEO, Throne Records (2021)"),
             ("Also", "Studying management"),
         ],
         "statement": "Times were changing. Clothes were changing. Morals were changing. Big God SZN never changed.",
         "bio": [
-            "Ogbe Japhet started Throne Records in 2021 as more than a label: a home for music, lifestyle and fashion that could connect Nigeria, Russia and the UK.",
-            "As Bros Throne, Ogbe leads the roster from the front. The catalogue runs from the street-level Afrobeats of How Far and G63 to the ghetto gospel of Jesu and Big God, with features from ODUMODUBLVCK, Zlatan Ibile, Blaq Bonez and labelmate Lilcase. The debut EP, Big God SZN, launched in June 2024.",
+            "Ogbe Japhet grew up in Benin City, where highlife and juju are part of everyday life. Backed by family, Ogbe was a regular at talent shows at Idogbo Secondary School, growing up on Fela Kuti.",
+            "In 2021 Ogbe started Throne Records as more than a label: a home for music, lifestyle and fashion that could connect Nigeria, Russia and the UK.",
+            "As Bros Throne, Ogbe leads the roster from the front. The catalogue runs from the street-level Afrobeats of How Far and G63 to the ghetto gospel of Jesu and Big God, with features from ODUMODUBLVCK, Zlatan Ibile, Blaq Bonez and labelmate Lilcase. The debut EP, Big God SZN, launched in June 2024 with seven tracks. That year brought a live Neighborhood Hero performance in Russia and billboards in Times Square, New York.",
         ],
         "records": [
             ("How Far", "", "Afrobeats", {"play": "how-far"}),
             ("Jesu", "", "Ghetto gospel", {"play": "jesu"}),
-            ("Big God SZN", "Debut EP · 2024", "EP", {"href": YT}),
+            ("Big God SZN", "Debut EP · 7 tracks · 2024", "EP", {"href": YT}),
             ("Big God", "ft. Lilcase", "Ghetto gospel", {"href": "https://www.youtube.com/watch?v=3StHfn7EThA"}),
             ("ASAP", "ft. Blaq Bonez", "Afrobeats", {"href": YT}),
             ("Reckless", "ft. ODUMODUBLVCK", "Afrobeats", {"href": YT}),
@@ -63,6 +66,17 @@ ARTISTS = [
             ("banner_b2.jpg", "Bros Throne on the phone in the studio"),
             ("featured_fet1_1.jpg", "Bros Throne portrait"),
             ("cloths_product2.jpg", "Bros Throne on stage"),
+        ],
+        "press": [
+            {"outlet": "Vanguard", "date": "14 Apr 2025",
+             "title": "Singer, Brosthrone makes statement as ‘The Knight of Afrobeat’",
+             "quote": "the self‑styled “Knight of Afrobeat,” whose sonic crusade has been rewriting the rules of West African music",
+             "url": "https://www.vanguardngr.com/2025/04/singer-brosthrone-makes-statement-as-the-knight-of-afrobeat/"},
+            {"outlet": "NotJustOk", "date": "22 Jul 2024",
+             "title": "Brosthrone wows fans in Russia with electrifying performance",
+             "quote": "Covers the live Neighborhood Hero performance in Russia and the Times Square billboards.",
+             "url": "https://notjustok.com/news/brosthrone-takes-times-square-by-storm-with-electrifying-performance/",
+             "paraphrase": True},
         ],
         "links": [
             ("Instagram", "https://www.instagram.com/brosthrone"),
@@ -185,6 +199,25 @@ def build_main(a, nxt):
         links_html = '    <p class="ap-connect__note">Socials coming soon. For now, reach Lilcase through the label.</p>'
     v = a["video"]
     nxt_name = " ".join(nxt["name"])
+    press_html = ""
+    if a.get("press"):
+        cards = "\n".join(
+            f'      <a class="press-card" href="{E(x["url"])}" target="_blank" rel="noopener" data-cursor="Read">'
+            f'<span class="press-card__meta"><b>{E(x["outlet"])}</b><span>{E(x["date"])}</span></span>'
+            f'<span class="press-card__title">{E(x["title"])}</span>'
+            + (f'<span class="press-card__note">{E(x["quote"])}</span>' if x.get("paraphrase") else f'<q class="press-card__quote">{E(x["quote"])}</q>')
+            + '<span class="press-card__go">Read the article <svg><use href="#i-arrow"/></svg></span></a>'
+            for x in a["press"])
+        press_html = f"""  <section class="press" data-tone="dark">
+    <div class="section-head">
+      <h2 class="section-title" data-split>In the press</h2>
+      <p class="section-note">What the papers are saying.</p>
+    </div>
+    <div class="press-grid">
+{cards}
+    </div>
+  </section>
+"""
     return f'''<main id="top" data-page="artist" data-title="{E(name_full)}">
 
   <section class="ap-hero" data-tone="dark">
@@ -252,6 +285,7 @@ def build_main(a, nxt):
     </div>
   </section>
 
+{press_html}
   <section class="ap-connect" data-tone="light">
     <h2 class="ap-connect__title" data-split>Follow {E(a["name"][0])}</h2>
 {links_html}

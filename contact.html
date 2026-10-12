@@ -7,7 +7,7 @@
 <meta name="description" content="Bookings, demos, press and Throne Wear: pick a desk and write to Throne Records.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;900&family=Hanken+Grotesk:wght@400;500;600&family=Martian+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@500..900&family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&display=swap">
 <link rel="stylesheet" href="css/style.css">
 <meta name="site-root" content="./">
 </head>
@@ -23,7 +23,7 @@
 </div>
 
 <!-- ============ CURSOR ============ -->
-<div class="cursor" id="cursor" aria-hidden="true"><span class="cursor__label" id="cursorLabel"></span></div>
+<div class="cursor" id="cursor" aria-hidden="true"><svg class="cursor__crown" viewBox="0 0 38 22"><use href="#crownMark"/></svg><span class="cursor__label" id="cursorLabel"></span></div>
 <div class="artist-float" id="artistFloat" aria-hidden="true"><img alt="" id="artistFloatImg"></div>
 <div class="show-peek" id="showPeek" aria-hidden="true"><img alt="" id="showPeekImg"></div>
 
@@ -55,10 +55,26 @@
     <a href="wear.html" data-magnetic>Wear</a>
     <a href="contact.html" data-magnetic>Contact</a>
   </nav>
-  <button class="nav__listen" type="button" data-play="how-far" data-cursor="Play" data-magnetic>
-    <span class="eq-mini" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-    <span class="nav__listen-text">Listen</span>
-  </button>
+  <div class="listen" id="listen">
+    <button class="nav__listen" id="listenBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="listenPanel" data-magnetic>
+      <span class="eq-mini" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <span class="nav__listen-text">Listen</span>
+      <svg class="nav__listen-caret" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4.5 6 8.5 10 4.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+    </button>
+    <div class="listen__panel" id="listenPanel" hidden>
+      <p class="listen__head">Play here</p>
+      <ul class="listen__list">
+        <li><button class="listen__item" type="button" data-play="how-far"><img src="assets/img/featured_fet1_1.jpg" alt=""><span class="listen__t"><b>How Far</b><small>Bros Throne · Afrobeats</small></span><span class="listen__dur" data-dur="how-far">—</span><span class="listen__state" aria-hidden="true"><svg><use href="#i-play"/></svg></span></button></li>
+        <li><button class="listen__item" type="button" data-play="jesu"><img src="assets/img/featured_fet1_2.jpg" alt=""><span class="listen__t"><b>Jesu</b><small>Bros Throne · Ghetto gospel</small></span><span class="listen__dur" data-dur="jesu">—</span><span class="listen__state" aria-hidden="true"><svg><use href="#i-play"/></svg></span></button></li>
+      </ul>
+      <p class="listen__head">On YouTube</p>
+      <ul class="listen__list">
+        <li><a class="listen__item" href="https://www.youtube.com/watch?v=3StHfn7EThA" target="_blank" rel="noopener"><img src="assets/img/event_big1.jpg" alt=""><span class="listen__t"><b>Big God</b><small>Bros Throne ft. Lilcase</small></span><span class="listen__state" aria-hidden="true"><svg><use href="#i-arrow"/></svg></span></a></li>
+        <li><a class="listen__item" href="https://www.youtube.com/watch?v=WiEGWS180w0" target="_blank" rel="noopener"><img src="assets/img/featured_fet_kid1.jpg" alt=""><span class="listen__t"><b>Calculate</b><small>Kidd Carder</small></span><span class="listen__state" aria-hidden="true"><svg><use href="#i-arrow"/></svg></span></a></li>
+        <li><a class="listen__item" href="https://www.youtube.com/@BrosThrone" target="_blank" rel="noopener"><img src="assets/img/artist_bros.jpg" alt=""><span class="listen__t"><b>Everything else</b><small>Reckless, Neighborhood Hero, Blessed, Lonely, G63</small></span><span class="listen__state" aria-hidden="true"><svg><use href="#i-arrow"/></svg></span></a></li>
+      </ul>
+    </div>
+  </div>
   <button class="nav__burger" id="burger" type="button" aria-expanded="false" aria-controls="menu" aria-label="Open menu">
     <span></span><span></span>
   </button>
@@ -220,7 +236,7 @@
     </ul>
     <a class="footer__up" href="#top" data-magnetic>Back to top ↑</a>
   </div>
-  <p class="footer__word" aria-hidden="true">THRONE</p>
+  <p class="footer__word" aria-hidden="true">Throne</p>
   <div class="footer__base">
     <span>© Throne Records 2026</span>
     <span>Lagos · Moscow · UK</span>

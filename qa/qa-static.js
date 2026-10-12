@@ -64,8 +64,22 @@ async function setup(ctx){
     if (res.badImgs.length) problems.push('broken images: '+res.badImgs.join(','));
     if (res.invisible.length) problems.push('stuck invisible: '+res.invisible.join(', '));
     if (res.loader || res.loading) problems.push('loader still present');
+    // and every 'top N%' trigger must start where its element really is
+    const trigOff = await p.evaluate(() => {
+      if (!window.ScrollTrigger) return [];
+      window.scrollTo(0, 0);
+      return ScrollTrigger.getAll().map(t => {
+        const m = /^top (top|bottom|center|(\d+)%)$/.exec(t.vars.start || '');
+        if (!m || !t.trigger || t.pin) return null;
+        const frac = m[1] === 'top' ? 0 : m[1] === 'bottom' ? 1 : m[1] === 'center' ? 0.5 : +m[2] / 100;
+        const want = t.trigger.getBoundingClientRect().top + scrollY - frac * innerHeight;
+        const expected = Math.max(0, Math.min(want, ScrollTrigger.maxScroll(window)));
+        return { name: (t.trigger.className || t.trigger.tagName).toString().split(' ')[0], off: Math.round(t.start - expected) };
+      }).filter(x => x && Math.abs(x.off) > 3);
+    });
     const badPins = pinOff.filter(x => Math.abs(x.off) > 2);
     if (badPins.length) problems.push('pinned section starts in the wrong place: '+badPins.map(x => `${x.name} off by ${x.off}px`).join(', '));
+    if (trigOff.length) problems.push('scroll animations start in the wrong place: '+trigOff.slice(0,5).map(x => `${x.name} off by ${x.off}px`).join(', '));
     console.log((problems.length?'FAIL ':'ok   ')+tag+(problems.length?'\n      '+problems.join('\n      '):''));
     if (problems.length) fails.push(tag);
     if ((r.w===390||r.w===1440) && !r.reduced) { await p.evaluate(()=>window.scrollTo(0,0)); await p.waitForTimeout(600); await p.screenshot({path:`${require('os').tmpdir()}/qa-${(r.pg||'home').replace(/\W/g,'_')}-${r.w}.png`}); }

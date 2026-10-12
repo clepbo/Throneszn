@@ -18,8 +18,12 @@ assets/img        client images pulled from the current site
 assets/audio      How Far + Jesu (from the current site)
 ```
 
-Libraries (CDN): GSAP 3.12.5 + ScrollTrigger, Lenis 1.1.13. Fonts: Big Shoulders
-Display, Hanken Grotesk, Martian Mono (Google Fonts).
+Libraries (CDN): GSAP 3.12.5 + ScrollTrigger, Lenis 1.1.13.
+
+Type (Google Fonts): **Grenze Gotisch**, a contemporary blackletter, for names and
+headlines — it speaks to gospel, royalty and streetwear at once. **Archivo** does
+everything else in three widths: regular for body, condensed + heavy for big statements
+and numbers, expanded for small labels. Blackletter is set in sentence case only.
 
 ## Live site
 
@@ -76,11 +80,22 @@ Internal links don't reload the page. `js/main.js` fetches the next page, swaps 
 track keeps playing while you browse. Back/forward work, deep links (`/#music`) work,
 and if anything fails it falls back to a normal page load.
 
+## Sources for artist facts
+
+Bros Throne's page uses the old site plus two press pieces, both linked from the page:
+[Vanguard, 14 Apr 2025](https://www.vanguardngr.com/2025/04/singer-brosthrone-makes-statement-as-the-knight-of-afrobeat/)
+(born in Benin City, "Knight of Afrobeat", Fela Kuti / highlife / juju, Idogbo Secondary
+School talent shows, Big God SZN: 7 tracks with Zlatan, Blaqbonez, ODUMODUBLVCK) and
+[NotJustOk, 22 Jul 2024](https://notjustok.com/news/brosthrone-takes-times-square-by-storm-with-electrifying-performance/)
+(Neighborhood Hero live in Russia, Times Square billboards). Instagram requires a login and
+was not used. The press spells the name "Brosthrone".
+
 ## QA
 
 Every page is checked in headless Chromium at 360, 390, 768, 1024, 1440 and 1920px wide,
 and with reduced motion on: no console errors, no sideways scroll, no broken images or
-links, no duplicate ids, nothing left invisible after scrolling. A second pass drives
+links, no duplicate ids, nothing left invisible after scrolling, and every scroll animation
+and pinned section starts exactly where its element is. A second pass drives
 every interaction (player, crate, trail, zoom, photo table, viewer, forms, map filter,
 archive rows, ticket, tee designer, moodboard, in-place navigation with Back/Forward and
 music continuity) on phone, tablet and desktop sizes.
@@ -121,7 +136,7 @@ out to lnk.to, slide-up reveals, a "fly" hover lift, minimal footer.
 | Contact | Topic chips (Booking / Demo / Press), floating labels, click-to-copy details. |
 | Footer | Outlined THRONE wordmark lit by a cursor spotlight. |
 
-Custom cursor with contextual labels (Play / View / Watch), magnetic buttons, smooth
+Crown cursor (it tilts with movement, grows over links and carries labels: Play / View / Watch), a Listen dropdown in the header with every track (play here or open on YouTube), magnetic buttons, smooth
 scroll, film grain. Everything respects `prefers-reduced-motion` and falls back to a
 plain, fully readable page if the libraries fail to load.
 
@@ -132,5 +147,7 @@ plain, fully readable page if the libraries fail to load.
 - Higher-res artist photography, full bios for Kidd Carder and Lilcase, and Lilcase's socials.
 - Confirm the management email (`thronerecordsmanagement@gmail.com` is our reading of the current site) and which phone numbers to publish.
 - 2026 show dates, and whether Throne Wear has a store yet (forms currently do not submit).
+- Confirm the artist name spelling: the site says "Bros Throne", the press says "Brosthrone".
+- Instagram content (captions, recent posts, show flyers): send screenshots or text, it can't be read without a login.
 - Real Throne Wear product photos and prints; the tee designer uses mock prints (crown mark, THRONE, Big God SZN, Lagos · Moscow · UK).
 - Vector logo files.

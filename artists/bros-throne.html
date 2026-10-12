@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Bros Throne — Throne Records</title>
-<meta name="description" content="Edo-born, Russia-based, and the founder of Throne Records. Bros Throne moves between Afrobeats bounce and ghetto gospel testimony.">
+<meta name="description" content="Born in Benin City, based in Russia, founder of Throne Records, and self-styled “Knight of Afrobeat”. Bros Throne moves between Afrobeats bounce and ghetto gospel testimony.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;900&family=Hanken+Grotesk:wght@400;500;600&family=Martian+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@500..900&family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&display=swap">
 <link rel="stylesheet" href="../css/style.css">
 <meta name="site-root" content="../">
 </head>
@@ -23,7 +23,7 @@
 </div>
 
 <!-- ============ CURSOR ============ -->
-<div class="cursor" id="cursor" aria-hidden="true"><span class="cursor__label" id="cursorLabel"></span></div>
+<div class="cursor" id="cursor" aria-hidden="true"><svg class="cursor__crown" viewBox="0 0 38 22"><use href="#crownMark"/></svg><span class="cursor__label" id="cursorLabel"></span></div>
 <div class="artist-float" id="artistFloat" aria-hidden="true"><img alt="" id="artistFloatImg"></div>
 <div class="show-peek" id="showPeek" aria-hidden="true"><img alt="" id="showPeekImg"></div>
 
@@ -55,10 +55,26 @@
     <a href="../wear.html" data-magnetic>Wear</a>
     <a href="../contact.html" data-magnetic>Contact</a>
   </nav>
-  <button class="nav__listen" type="button" data-play="how-far" data-cursor="Play" data-magnetic>
-    <span class="eq-mini" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-    <span class="nav__listen-text">Listen</span>
-  </button>
+  <div class="listen" id="listen">
+    <button class="nav__listen" id="listenBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="listenPanel" data-magnetic>
+      <span class="eq-mini" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <span class="nav__listen-text">Listen</span>
+      <svg class="nav__listen-caret" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4.5 6 8.5 10 4.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+    </button>
+    <div class="listen__panel" id="listenPanel" hidden>
+      <p class="listen__head">Play here</p>
+      <ul class="listen__list">
+        <li><button class="listen__item" type="button" data-play="how-far"><img src="../assets/img/featured_fet1_1.jpg" alt=""><span class="listen__t"><b>How Far</b><small>Bros Throne · Afrobeats</small></span><span class="listen__dur" data-dur="how-far">—</span><span class="listen__state" aria-hidden="true"><svg><use href="#i-play"/></svg></span></button></li>
+        <li><button class="listen__item" type="button" data-play="jesu"><img src="../assets/img/featured_fet1_2.jpg" alt=""><span class="listen__t"><b>Jesu</b><small>Bros Throne · Ghetto gospel</small></span><span class="listen__dur" data-dur="jesu">—</span><span class="listen__state" aria-hidden="true"><svg><use href="#i-play"/></svg></span></button></li>
+      </ul>
+      <p class="listen__head">On YouTube</p>
+      <ul class="listen__list">
+        <li><a class="listen__item" href="https://www.youtube.com/watch?v=3StHfn7EThA" target="_blank" rel="noopener"><img src="../assets/img/event_big1.jpg" alt=""><span class="listen__t"><b>Big God</b><small>Bros Throne ft. Lilcase</small></span><span class="listen__state" aria-hidden="true"><svg><use href="#i-arrow"/></svg></span></a></li>
+        <li><a class="listen__item" href="https://www.youtube.com/watch?v=WiEGWS180w0" target="_blank" rel="noopener"><img src="../assets/img/featured_fet_kid1.jpg" alt=""><span class="listen__t"><b>Calculate</b><small>Kidd Carder</small></span><span class="listen__state" aria-hidden="true"><svg><use href="#i-arrow"/></svg></span></a></li>
+        <li><a class="listen__item" href="https://www.youtube.com/@BrosThrone" target="_blank" rel="noopener"><img src="../assets/img/artist_bros.jpg" alt=""><span class="listen__t"><b>Everything else</b><small>Reckless, Neighborhood Hero, Blessed, Lonely, G63</small></span><span class="listen__state" aria-hidden="true"><svg><use href="#i-arrow"/></svg></span></a></li>
+      </ul>
+    </div>
+  </div>
   <button class="nav__burger" id="burger" type="button" aria-expanded="false" aria-controls="menu" aria-label="Open menu">
     <span></span><span></span>
   </button>
@@ -101,7 +117,7 @@
       <a class="ap-back" href="../#artists" data-magnetic>← The roster</a>
       <p class="eyebrow">A/01 · Artist · Founder &amp; CEO</p>
       <h1 class="ap-name" aria-label="Bros Throne"><span class="ap-line"><span>Bros</span></span><span class="ap-line"><span>Throne</span></span></h1>
-      <p class="ap-lede">Edo-born, Russia-based, and the founder of Throne Records. Bros Throne moves between Afrobeats bounce and ghetto gospel testimony.</p>
+      <p class="ap-lede">Born in Benin City, based in Russia, founder of Throne Records, and self-styled “Knight of Afrobeat”. Bros Throne moves between Afrobeats bounce and ghetto gospel testimony.</p>
       <div class="ap-actions">
         <button class="btn btn--gold" type="button" data-play="how-far" data-magnetic data-cursor="Play"><svg><use href="#i-play"/></svg> Play How Far</button>
         <a class="btn btn--ghost" href="../contact.html?desk=booking&amp;artist=bros-throne" data-magnetic>Book Bros</a>
@@ -118,14 +134,17 @@
     <div class="ap-about__grid">
       <dl class="ap-facts">
       <div><dt>Real name</dt><dd>Ogbe Japhet</dd></div>
-      <div><dt>From</dt><dd>Edo State, Nigeria</dd></div>
+      <div><dt>Born</dt><dd>Benin City, Edo State, Nigeria</dd></div>
+      <div><dt>Known as</dt><dd>The Knight of Afrobeat</dd></div>
+      <div><dt>Grew up on</dt><dd>Fela Kuti, highlife, juju</dd></div>
       <div><dt>Based</dt><dd>Russia</dd></div>
       <div><dt>Role</dt><dd>Founder &amp; CEO, Throne Records (2021)</dd></div>
       <div><dt>Also</dt><dd>Studying management</dd></div>
       </dl>
       <div class="ap-bio">
-      <p>Ogbe Japhet started Throne Records in 2021 as more than a label: a home for music, lifestyle and fashion that could connect Nigeria, Russia and the UK.</p>
-      <p>As Bros Throne, Ogbe leads the roster from the front. The catalogue runs from the street-level Afrobeats of How Far and G63 to the ghetto gospel of Jesu and Big God, with features from ODUMODUBLVCK, Zlatan Ibile, Blaq Bonez and labelmate Lilcase. The debut EP, Big God SZN, launched in June 2024.</p>
+      <p>Ogbe Japhet grew up in Benin City, where highlife and juju are part of everyday life. Backed by family, Ogbe was a regular at talent shows at Idogbo Secondary School, growing up on Fela Kuti.</p>
+      <p>In 2021 Ogbe started Throne Records as more than a label: a home for music, lifestyle and fashion that could connect Nigeria, Russia and the UK.</p>
+      <p>As Bros Throne, Ogbe leads the roster from the front. The catalogue runs from the street-level Afrobeats of How Far and G63 to the ghetto gospel of Jesu and Big God, with features from ODUMODUBLVCK, Zlatan Ibile, Blaq Bonez and labelmate Lilcase. The debut EP, Big God SZN, launched in June 2024 with seven tracks. That year brought a live Neighborhood Hero performance in Russia and billboards in Times Square, New York.</p>
       </div>
     </div>
   </section>
@@ -138,7 +157,7 @@
     <ol class="ap-rec-list">
       <li><div class="ap-rec" data-play="how-far" data-cursor="Play"><span class="ap-rec__idx">01</span><span class="ap-rec__title">How Far</span><span class="ap-rec__kind">Afrobeats</span><button class="ap-rec__act" type="button" data-play="how-far" aria-label="Play How Far"><svg><use href="#i-play"/></svg></button></div></li>
       <li><div class="ap-rec" data-play="jesu" data-cursor="Play"><span class="ap-rec__idx">02</span><span class="ap-rec__title">Jesu</span><span class="ap-rec__kind">Ghetto gospel</span><button class="ap-rec__act" type="button" data-play="jesu" aria-label="Play Jesu"><svg><use href="#i-play"/></svg></button></div></li>
-      <li><a class="ap-rec" href="https://www.youtube.com/@BrosThrone" target="_blank" rel="noopener" data-cursor="Watch"><span class="ap-rec__idx">03</span><span class="ap-rec__title">Big God SZN<span class="ap-rec__feat">Debut EP · 2024</span></span><span class="ap-rec__kind">EP</span><span class="ap-rec__act ap-rec__act--out" aria-hidden="true"><svg><use href="#i-arrow"/></svg></span></a></li>
+      <li><a class="ap-rec" href="https://www.youtube.com/@BrosThrone" target="_blank" rel="noopener" data-cursor="Watch"><span class="ap-rec__idx">03</span><span class="ap-rec__title">Big God SZN<span class="ap-rec__feat">Debut EP · 7 tracks · 2024</span></span><span class="ap-rec__kind">EP</span><span class="ap-rec__act ap-rec__act--out" aria-hidden="true"><svg><use href="#i-arrow"/></svg></span></a></li>
       <li><a class="ap-rec" href="https://www.youtube.com/watch?v=3StHfn7EThA" target="_blank" rel="noopener" data-cursor="Watch"><span class="ap-rec__idx">04</span><span class="ap-rec__title">Big God<span class="ap-rec__feat">ft. Lilcase</span></span><span class="ap-rec__kind">Ghetto gospel</span><span class="ap-rec__act ap-rec__act--out" aria-hidden="true"><svg><use href="#i-arrow"/></svg></span></a></li>
       <li><a class="ap-rec" href="https://www.youtube.com/@BrosThrone" target="_blank" rel="noopener" data-cursor="Watch"><span class="ap-rec__idx">05</span><span class="ap-rec__title">ASAP<span class="ap-rec__feat">ft. Blaq Bonez</span></span><span class="ap-rec__kind">Afrobeats</span><span class="ap-rec__act ap-rec__act--out" aria-hidden="true"><svg><use href="#i-arrow"/></svg></span></a></li>
       <li><a class="ap-rec" href="https://www.youtube.com/@BrosThrone" target="_blank" rel="noopener" data-cursor="Watch"><span class="ap-rec__idx">06</span><span class="ap-rec__title">Reckless<span class="ap-rec__feat">ft. ODUMODUBLVCK</span></span><span class="ap-rec__kind">Afrobeats</span><span class="ap-rec__act ap-rec__act--out" aria-hidden="true"><svg><use href="#i-arrow"/></svg></span></a></li>
@@ -179,6 +198,17 @@
     </div>
   </section>
 
+  <section class="press" data-tone="dark">
+    <div class="section-head">
+      <h2 class="section-title" data-split>In the press</h2>
+      <p class="section-note">What the papers are saying.</p>
+    </div>
+    <div class="press-grid">
+      <a class="press-card" href="https://www.vanguardngr.com/2025/04/singer-brosthrone-makes-statement-as-the-knight-of-afrobeat/" target="_blank" rel="noopener" data-cursor="Read"><span class="press-card__meta"><b>Vanguard</b><span>14 Apr 2025</span></span><span class="press-card__title">Singer, Brosthrone makes statement as ‘The Knight of Afrobeat’</span><q class="press-card__quote">the self‑styled “Knight of Afrobeat,” whose sonic crusade has been rewriting the rules of West African music</q><span class="press-card__go">Read the article <svg><use href="#i-arrow"/></svg></span></a>
+      <a class="press-card" href="https://notjustok.com/news/brosthrone-takes-times-square-by-storm-with-electrifying-performance/" target="_blank" rel="noopener" data-cursor="Read"><span class="press-card__meta"><b>NotJustOk</b><span>22 Jul 2024</span></span><span class="press-card__title">Brosthrone wows fans in Russia with electrifying performance</span><span class="press-card__note">Covers the live Neighborhood Hero performance in Russia and the Times Square billboards.</span><span class="press-card__go">Read the article <svg><use href="#i-arrow"/></svg></span></a>
+    </div>
+  </section>
+
   <section class="ap-connect" data-tone="light">
     <h2 class="ap-connect__title" data-split>Follow Bros</h2>
     <ul class="ap-links">
@@ -209,7 +239,7 @@
     </ul>
     <a class="footer__up" href="#top" data-magnetic>Back to top ↑</a>
   </div>
-  <p class="footer__word" aria-hidden="true">THRONE</p>
+  <p class="footer__word" aria-hidden="true">Throne</p>
   <div class="footer__base">
     <span>© Throne Records 2026</span>
     <span>Lagos · Moscow · UK</span>
